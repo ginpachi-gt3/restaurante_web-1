@@ -1,0 +1,3008 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#16293A">
+<title>OrderFast | Sistema de Administración para Restaurantes</title>
+<style>
+/* ============================================================
+   BASE
+   ============================================================ */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --fondo:#F5F2EC;   --panel:#FFFFFF;  --azul:#1B3A57;   --azul2:#24506F;
+  --celeste:#2E7DA8; --coral:#E05A3A;  --verde:#1F9D7A;  --ambar:#E89B2A;
+  --rojo:#C0392B;    --texto:#1E2F3D;  --suave:#5A6E7E;  --borde:#D9D0C2;
+  --input:#FBF9F5;   --dark:#12212E;   --hover:#1E3D57;  --blanco:#FFFFFF;
+  --crema:#FDFAF4;
+  --sombra:0 4px 20px rgba(18,33,46,.10);
+  --sombra-g:0 14px 44px rgba(18,33,46,.18);
+  --radio:14px;
+  --nav-h:76px;
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:"Segoe UI",Roboto,system-ui,-apple-system,sans-serif;
+  background:var(--fondo); color:var(--texto); line-height:1.65;
+  font-size:16px; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+body.menu-abierto{overflow:hidden}
+h1,h2,h3,h4{font-weight:700;line-height:1.25;color:var(--azul)}
+a{color:var(--celeste);text-decoration:none}
+a:hover{text-decoration:underline}
+code{
+  font-family:"Consolas","Monaco","Courier New",monospace;
+  background:#E8EFF5;color:#1B3A57;padding:2px 7px;border-radius:5px;font-size:.88em;
+  word-break:break-word;
+}
+pre{
+  background:var(--dark);color:#D7E3EB;padding:20px 22px;border-radius:12px;
+  overflow-x:auto;font-size:13.5px;line-height:1.7;
+  font-family:"Consolas","Monaco","Courier New",monospace;
+  -webkit-overflow-scrolling:touch;
+}
+pre code{background:none;color:inherit;padding:0;font-size:1em}
+img{max-width:100%;height:auto;display:block}
+
+/* ============================================================
+   LOGO SVG
+   ============================================================ */
+.logo-svg{display:block;width:46px;height:46px;flex-shrink:0}
+.logo-svg .ring-outer{fill:none;stroke:var(--azul);stroke-width:15}
+.logo-svg .ring-arc{fill:none;stroke:var(--coral);stroke-width:11;stroke-linecap:round}
+.logo-svg .cloche{fill:var(--coral)}
+.logo-svg .cloche-base{fill:var(--ambar)}
+.logo-svg .cloche-plate{fill:var(--azul)}
+.logo-svg .cloche-shine{stroke:#fff;stroke-width:7;stroke-linecap:round;fill:none;opacity:.85}
+.logo-svg .bar-1{fill:var(--coral)}
+.logo-svg .bar-2{fill:var(--ambar)}
+.logo-svg .bar-3{fill:var(--verde)}
+.logo-svg .receipt{fill:var(--crema);stroke:var(--azul);stroke-width:11;stroke-linejoin:round}
+.logo-svg .dot-coral{fill:var(--coral)}
+.logo-svg .dot-amber{fill:var(--ambar)}
+.logo-svg .line{stroke:var(--azul);stroke-width:11;stroke-linecap:round}
+.logo-svg .dashed{stroke:var(--azul);stroke-width:8;stroke-linecap:round;stroke-dasharray:6 14}
+.logo-svg .check-circle{fill:var(--verde);stroke:var(--azul);stroke-width:13}
+.logo-svg .check-mark{stroke:var(--crema);stroke-width:22;stroke-linecap:round;stroke-linejoin:round;fill:none}
+
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+.navbar{
+  position:sticky;top:0;z-index:100;background:var(--dark);
+  box-shadow:0 2px 18px rgba(0,0,0,.25);
+}
+.nav-inner{
+  max-width:1240px;margin:0 auto;padding:0 20px;
+  display:flex;align-items:center;gap:8px;height:var(--nav-h);
+}
+.logo{
+  display:flex;align-items:center;gap:10px;margin-right:16px;
+  text-decoration:none;flex-shrink:0;
+}
+.logo:hover{text-decoration:none}
+.logo-txt h2{color:#fff;font-size:17px;letter-spacing:.8px;line-height:1.1;font-weight:800}
+.logo-txt h2 em{font-style:normal;color:#FF7A5C}
+.logo-txt span{color:#9BB0C2;font-size:9px;letter-spacing:2.4px;font-weight:600;display:block}
+
+.menu{display:flex;align-items:center;gap:2px;flex:1}
+.menu > li{list-style:none;position:relative}
+.menu > li > a{
+  display:flex;align-items:center;gap:6px;color:#D0DEE8;font-size:14px;
+  padding:9px 14px;border-radius:9px;text-decoration:none;font-weight:600;
+  white-space:nowrap;transition:background .15s,color .15s;cursor:pointer;
+}
+.menu > li > a:hover{background:var(--hover);color:#fff;text-decoration:none}
+.menu > li > a.activo{background:var(--hover);color:#fff;box-shadow:inset 0 -3px 0 var(--coral)}
+.flecha{font-size:9px;opacity:.75;transition:transform .2s}
+.menu > li.desplegado > a .flecha{transform:rotate(180deg)}
+
+.submenu{
+  position:absolute;top:calc(100% + 8px);left:0;min-width:260px;
+  background:#fff;border-radius:12px;box-shadow:var(--sombra-g);
+  padding:8px;opacity:0;visibility:hidden;transform:translateY(-8px);
+  transition:all .18s ease;list-style:none;border:1px solid var(--borde);
+}
+.menu > li:hover .submenu{opacity:1;visibility:visible;transform:translateY(0)}
+.submenu li a{
+  display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:9px;
+  color:var(--texto);font-size:13.5px;font-weight:600;text-decoration:none;
+  transition:background .13s;
+}
+.submenu li a:hover{background:#EEF4F9;text-decoration:none}
+.submenu li a .ico{
+  width:32px;height:32px;border-radius:9px;background:#E4EEF5;
+  display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;
+}
+.submenu li a small{display:block;color:var(--suave);font-size:11px;font-weight:400;line-height:1.3}
+.submenu li a.activo{background:#E4EEF5}
+.submenu .separador{height:1px;background:var(--borde);margin:6px 8px}
+
+.nav-cta{
+  background:var(--coral);color:#fff;padding:11px 20px;border-radius:9px;
+  font-size:13.5px;font-weight:700;text-decoration:none;white-space:nowrap;
+  transition:filter .15s;box-shadow:0 6px 18px rgba(224,90,58,.4);
+  flex-shrink:0;
+}
+.nav-cta:hover{filter:brightness(1.1);text-decoration:none}
+
+.btn-menu-movil{
+  display:none;background:none;border:none;color:#fff;font-size:26px;
+  cursor:pointer;padding:8px 12px;margin-left:auto;
+  border-radius:9px;transition:background .15s;
+  -webkit-tap-highlight-color:transparent;
+  z-index:110;
+}
+.btn-menu-movil:hover{background:var(--hover)}
+.btn-menu-movil.activo{background:var(--coral)}
+
+.overlay-menu{
+  display:none;position:fixed;inset:var(--nav-h) 0 0 0;
+  background:rgba(0,0,0,.5);z-index:98;
+  opacity:0;transition:opacity .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.overlay-menu.activo{display:block;opacity:1}
+
+/* ============================================================
+   PÁGINAS
+   ============================================================ */
+.pagina{display:none;animation:aparecer .35s ease}
+.pagina.activa{display:block}
+@keyframes aparecer{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+.contenedor{max-width:1240px;margin:0 auto;padding:0 20px;width:100%}
+.seccion{padding:70px 0}
+.seccion.ajustada{padding:48px 0}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{
+  background:linear-gradient(135deg,#12212E 0%,#1B3A57 55%,#2E7DA8 135%);
+  color:#fff;padding:80px 0 90px;position:relative;overflow:hidden;
+}
+.hero::before{
+  content:"";position:absolute;top:-160px;right:-120px;width:520px;height:520px;
+  background:radial-gradient(circle,rgba(224,90,58,.32),transparent 68%);
+  border-radius:50%;pointer-events:none;
+}
+.hero::after{
+  content:"";position:absolute;bottom:-180px;left:-100px;width:440px;height:440px;
+  background:radial-gradient(circle,rgba(31,157,122,.28),transparent 70%);
+  border-radius:50%;pointer-events:none;
+}
+.hero-inner{
+  max-width:1240px;margin:0 auto;padding:0 20px;position:relative;z-index:2;
+  display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center;
+}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.25);padding:7px 16px;border-radius:999px;
+  font-size:12.5px;font-weight:700;letter-spacing:.7px;margin-bottom:22px;
+  backdrop-filter:blur(4px);
+}
+.hero-tag .punto{
+  width:8px;height:8px;border-radius:50%;background:#4ADE80;
+  box-shadow:0 0 0 4px rgba(74,222,128,.25);flex-shrink:0;
+}
+.hero h1{font-size:clamp(30px,5vw,47px);color:#fff;letter-spacing:-.5px;margin-bottom:18px}
+.hero h1 em{font-style:normal;color:#FF8A66}
+.hero p.lead{font-size:clamp(15px,2vw,17.5px);color:#D0E0EC;margin-bottom:32px;max-width:600px}
+.hero-botones{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:38px}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:14px 26px;
+  border-radius:11px;font-size:15px;font-weight:700;text-decoration:none;
+  border:none;cursor:pointer;transition:transform .12s,filter .15s,background .15s;
+  font-family:inherit;white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn:hover{text-decoration:none;transform:translateY(-2px)}
+.btn:active{transform:translateY(0)}
+.btn-coral{background:var(--coral);color:#fff;box-shadow:0 8px 22px rgba(224,90,58,.4)}
+.btn-coral:hover{filter:brightness(1.08)}
+.btn-borde{background:rgba(255,255,255,.12);color:#fff;border:1.6px solid rgba(255,255,255,.4)}
+.btn-borde:hover{background:rgba(255,255,255,.2)}
+.btn-azul{background:var(--azul);color:#fff}
+.btn-azul:hover{background:var(--azul2)}
+.btn-verde{background:var(--verde);color:#fff}
+.btn-blanco{background:#fff;color:var(--azul)}
+.btn-blanco:hover{background:#EEF4F9}
+.btn-sm{padding:9px 18px;font-size:13.5px}
+
+.hero-stats{display:flex;gap:38px;flex-wrap:wrap}
+.hero-stat strong{display:block;font-size:clamp(22px,3vw,29px);color:#fff;line-height:1.15}
+.hero-stat span{font-size:12.5px;color:#A8BDCC;letter-spacing:.4px}
+
+.hero-img{
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 28px 70px rgba(0,0,0,.45);
+  transform:perspective(1400px) rotateY(-7deg) rotateX(3deg);
+  transition:transform .5s ease;
+  border:2px solid rgba(255,255,255,.15);
+}
+.hero-img:hover{transform:perspective(1400px) rotateY(0) rotateX(0)}
+.hero-img img{width:100%;height:340px;object-fit:cover;display:block}
+
+/* ============================================================
+   TÍTULOS DE SECCIÓN
+   ============================================================ */
+.titulo-seccion{text-align:center;max-width:760px;margin:0 auto 48px}
+.titulo-seccion .etiqueta{
+  display:inline-block;background:#DCEAF4;color:var(--celeste);
+  font-size:11.5px;font-weight:800;letter-spacing:1.6px;
+  padding:6px 15px;border-radius:999px;margin-bottom:16px;
+}
+.titulo-seccion h2{font-size:clamp(24px,3.5vw,34px);margin-bottom:14px;letter-spacing:-.4px}
+.titulo-seccion p{color:var(--suave);font-size:clamp(15px,1.8vw,16.5px)}
+
+/* ============================================================
+   TARJETAS
+   ============================================================ */
+.grid{display:grid;gap:22px}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+
+.tarjeta{
+  background:var(--panel);border:1px solid var(--borde);border-radius:var(--radio);
+  padding:30px 28px;transition:transform .2s ease,box-shadow .2s ease,border-color .2s;
+  height:100%;
+}
+.tarjeta:hover{transform:translateY(-4px);box-shadow:var(--sombra-g);border-color:#C9BFAE}
+.tarjeta .ico-caja{
+  width:52px;height:52px;border-radius:13px;display:flex;align-items:center;
+  justify-content:center;font-size:24px;margin-bottom:18px;
+}
+.ico-azul{background:#DCEAF4;color:var(--celeste)}
+.ico-verde{background:#D6F0E7;color:var(--verde)}
+.ico-coral{background:#FBE4DD;color:var(--coral)}
+.ico-ambar{background:#FBEED6;color:var(--ambar)}
+.ico-rojo{background:#FADEDB;color:var(--rojo)}
+.ico-morado{background:#E8E1F7;color:#6D4FC4}
+
+.tarjeta h3{font-size:18.5px;margin-bottom:9px}
+.tarjeta p{color:var(--suave);font-size:14.5px}
+.tarjeta ul{margin-top:13px;padding-left:0;list-style:none}
+.tarjeta ul li{
+  color:var(--suave);font-size:13.5px;padding:5px 0 5px 22px;position:relative;
+}
+.tarjeta ul li::before{
+  content:"✓";position:absolute;left:0;color:var(--verde);font-weight:800;font-size:12px;
+}
+
+.tarjeta-img{padding:0;overflow:hidden}
+.tarjeta-img img{width:100%;height:170px;object-fit:cover;display:block}
+.tarjeta-img .cuerpo{padding:24px 24px 28px}
+
+.tarjeta-modulo{cursor:pointer;position:relative;overflow:hidden;text-decoration:none;display:block}
+.tarjeta-modulo:hover{text-decoration:none}
+.tarjeta-modulo::after{
+  content:"→";position:absolute;right:26px;bottom:26px;font-size:19px;
+  color:var(--celeste);opacity:0;transform:translateX(-8px);transition:all .2s;
+}
+.tarjeta-modulo:hover::after{opacity:1;transform:translateX(0)}
+.tarjeta-modulo .numero{
+  position:absolute;top:20px;right:24px;font-size:34px;font-weight:800;
+  color:#EDE7DC;line-height:1;
+}
+
+/* ============================================================
+   CABECERA DE PÁGINA
+   ============================================================ */
+.cabecera-pagina{
+  background:linear-gradient(135deg,var(--azul),var(--azul2));color:#fff;
+  padding:52px 0 56px;position:relative;overflow:hidden;
+}
+.cabecera-pagina::before{
+  content:"";position:absolute;top:-80px;right:-60px;width:280px;height:280px;
+  background:radial-gradient(circle,rgba(224,90,58,.25),transparent 70%);border-radius:50%;
+  pointer-events:none;
+}
+.cabecera-pagina .migas{
+  font-size:12.5px;color:#A8BDCC;margin-bottom:14px;letter-spacing:.3px;position:relative;
+  word-wrap:break-word;
+}
+.cabecera-pagina .migas a{color:#A8BDCC;text-decoration:none}
+.cabecera-pagina .migas a:hover{color:#fff;text-decoration:underline}
+.cabecera-pagina h1{
+  color:#fff;font-size:clamp(24px,4vw,36px);letter-spacing:-.4px;margin-bottom:12px;position:relative;
+}
+.cabecera-pagina p{color:#C8D9E6;font-size:clamp(15px,1.9vw,16.5px);max-width:760px;position:relative}
+
+/* ============================================================
+   TABLAS
+   ============================================================ */
+.tabla-envoltura{
+  overflow-x:auto;border:1px solid var(--borde);border-radius:var(--radio);
+  background:#fff;box-shadow:var(--sombra);
+  -webkit-overflow-scrolling:touch;
+  position:relative;
+}
+.tabla-envoltura::after{
+  content:"→ Desliza para ver más";
+  position:absolute;bottom:0;left:0;right:0;padding:6px 12px;
+  background:linear-gradient(transparent,rgba(18,33,46,.92));
+  color:#fff;font-size:11px;text-align:right;font-weight:600;
+  border-radius:0 0 var(--radio) var(--radio);
+  opacity:0;transition:opacity .3s;pointer-events:none;
+}
+.tabla-envoltura:hover::after{opacity:1}
+table.tabla{width:100%;border-collapse:collapse;font-size:14.5px;min-width:600px}
+table.tabla thead th{
+  background:var(--azul);color:#fff;text-align:left;padding:14px 18px;
+  font-size:12.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+  white-space:nowrap;
+}
+table.tabla tbody td{padding:13px 18px;border-bottom:1px solid #E8EEF3;color:var(--texto)}
+table.tabla tbody tr:last-child td{border-bottom:none}
+table.tabla tbody tr:nth-child(even){background:#F8FBFD}
+table.tabla code{font-size:13px}
+td .tipo{
+  display:inline-block;background:#DCEAF4;color:var(--celeste);
+  padding:2px 9px;border-radius:5px;font-size:11.5px;font-weight:700;
+  font-family:"Consolas",monospace;white-space:nowrap;
+}
+
+/* ============================================================
+   FILA INFO
+   ============================================================ */
+.fila-info{
+  display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center;
+  padding:44px 0;
+}
+.fila-info.invertida .texto{order:2}
+.fila-info.invertida .visual{order:1}
+.fila-info h2{font-size:clamp(22px,3vw,29px);margin-bottom:14px;letter-spacing:-.3px}
+.fila-info p{color:var(--suave);font-size:16px;margin-bottom:18px}
+.fila-info ul{list-style:none;padding:0}
+.fila-info ul li{
+  padding:9px 0 9px 34px;position:relative;font-size:15px;color:var(--texto);
+}
+.fila-info ul li::before{
+  content:"✓";position:absolute;left:0;top:9px;width:22px;height:22px;
+  background:#D6F0E7;color:var(--verde);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;
+  flex-shrink:0;
+}
+.visual-caja{
+  background:linear-gradient(135deg,#E4EEF5,#F5F2EC);border:1px solid var(--borde);
+  border-radius:16px;padding:0;display:flex;align-items:center;justify-content:center;
+  min-height:260px;overflow:hidden;
+}
+.visual-caja img{width:100%;height:100%;object-fit:cover;min-height:260px}
+.visual-icono{font-size:clamp(56px,8vw,80px);line-height:1}
+
+/* ============================================================
+   PASOS
+   ============================================================ */
+.pasos{position:relative;padding-left:0}
+.paso{
+  display:grid;grid-template-columns:56px 1fr;gap:22px;
+  padding-bottom:36px;position:relative;
+}
+.paso:not(:last-child)::before{
+  content:"";position:absolute;left:27px;top:56px;bottom:0;width:2px;
+  background:linear-gradient(var(--borde),transparent);
+}
+.paso-num{
+  width:56px;height:56px;border-radius:16px;background:var(--azul);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:800;
+  box-shadow:0 8px 20px rgba(27,58,87,.25);flex-shrink:0;
+}
+.paso-cuerpo h3{font-size:19px;margin-bottom:8px}
+.paso-cuerpo p{color:var(--suave);font-size:15px;margin-bottom:12px}
+
+/* ============================================================
+   FAQ
+   ============================================================ */
+.faq-item{
+  background:#fff;border:1px solid var(--borde);border-radius:12px;
+  margin-bottom:12px;overflow:hidden;transition:box-shadow .2s;
+}
+.faq-item:hover{box-shadow:var(--sombra)}
+.faq-pregunta{
+  padding:19px 24px;cursor:pointer;display:flex;justify-content:space-between;
+  align-items:center;gap:18px;font-weight:700;font-size:clamp(14.5px,1.8vw,16px);color:var(--azul);
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .15s;
+}
+.faq-pregunta:hover{background:#F8FBFD}
+.faq-pregunta .signo{
+  width:28px;height:28px;border-radius:50%;background:#E4EEF5;color:var(--celeste);
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+  flex-shrink:0;transition:transform .25s,background .2s;
+}
+.faq-item.abierto .faq-pregunta .signo{transform:rotate(45deg);background:var(--coral);color:#fff}
+.faq-respuesta{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.faq-item.abierto .faq-respuesta{max-height:600px}
+.faq-respuesta-inner{
+  padding:18px 24px 22px;color:var(--suave);font-size:15px;border-top:1px solid #E8EEF3;
+}
+
+/* ============================================================
+   CTA FINAL
+   ============================================================ */
+.cta-final{
+  background:linear-gradient(135deg,var(--azul),var(--celeste));border-radius:20px;
+  padding:58px 52px;text-align:center;color:#fff;position:relative;overflow:hidden;
+}
+.cta-final::before{
+  content:"";position:absolute;top:-90px;right:-70px;width:300px;height:300px;
+  background:radial-gradient(circle,rgba(224,90,58,.32),transparent 70%);border-radius:50%;
+  pointer-events:none;
+}
+.cta-final h2{color:#fff;font-size:clamp(22px,3.2vw,31px);margin-bottom:14px;position:relative}
+.cta-final p{color:#C8D9E6;font-size:clamp(15px,1.9vw,16.5px);margin-bottom:30px;position:relative;max-width:640px;margin-left:auto;margin-right:auto}
+.cta-final .botones{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative}
+
+/* ============================================================
+   GALERÍA DE COMIDA
+   ============================================================ */
+.galeria-comida{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+}
+.plato{
+  background:#fff;border:1px solid var(--borde);border-radius:14px;
+  overflow:hidden;transition:transform .2s,box-shadow .2s;text-align:center;
+}
+.plato:hover{transform:translateY(-4px);box-shadow:var(--sombra-g)}
+.plato img{width:100%;height:150px;object-fit:cover;display:block}
+.plato .info{padding:14px 12px 18px}
+.plato h4{font-size:14.5px;margin-bottom:3px}
+.plato span{font-size:12px;color:var(--suave);display:block;margin-bottom:8px}
+.plato .precio{
+  display:inline-block;background:#D6F0E7;color:var(--verde);
+  font-size:12px;font-weight:800;padding:3px 12px;border-radius:999px;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer{background:var(--dark);color:#A8BDCC;padding:60px 0 26px}
+.footer-grid{
+  display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;margin-bottom:44px;
+}
+.footer-marca{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.footer-marca h3{color:#fff;font-size:17px;letter-spacing:.8px;font-weight:800}
+.footer-marca h3 em{font-style:normal;color:#FF7A5C}
+.footer-marca span{color:#9BB0C2;font-size:9px;letter-spacing:2.4px;font-weight:600;display:block}
+footer p{font-size:14px;line-height:1.75}
+footer h4{
+  color:#fff;font-size:13px;letter-spacing:1.1px;margin-bottom:16px;text-transform:uppercase;
+}
+footer ul{list-style:none}
+footer ul li{margin-bottom:10px}
+footer ul li a{color:#A8BDCC;font-size:14px;text-decoration:none;transition:color .15s}
+footer ul li a:hover{color:#fff;text-decoration:none}
+.footer-abajo{
+  border-top:1px solid #23425A;padding-top:24px;
+  display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;
+  font-size:13px;
+}
+.footer-abajo .social{display:flex;gap:10px}
+.footer-abajo .social a{
+  width:36px;height:36px;border-radius:9px;background:#1E3D57;color:#D0DEE8;
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+  text-decoration:none;transition:background .15s,color .15s;
+}
+.footer-abajo .social a:hover{background:var(--coral);color:#fff;text-decoration:none}
+
+/* ============================================================
+   UTILIDADES
+   ============================================================ */
+.texto-centro{text-align:center}
+.mt-1{margin-top:8px}.mt-2{margin-top:16px}.mt-3{margin-top:24px}.mt-4{margin-top:32px}
+.mb-2{margin-bottom:16px}.mb-3{margin-bottom:24px}.mb-4{margin-bottom:32px}
+.chip{
+  display:inline-flex;align-items:center;gap:7px;background:#E4EEF5;color:var(--azul2);
+  padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:700;margin:3px;
+}
+.chip-verde{background:#D6F0E7;color:var(--verde)}
+.chip-coral{background:#FBE4DD;color:var(--coral)}
+.chip-ambar{background:#FBEED6;color:#9A6B15}
+.aviso{
+  background:#DCEAF4;border-left:4px solid var(--celeste);border-radius:10px;
+  padding:18px 22px;font-size:14.5px;color:var(--azul2);margin:20px 0;
+}
+.aviso.verde{background:#D6F0E7;border-color:var(--verde);color:#17614C}
+.aviso.ambar{background:#FBEED6;border-color:var(--ambar);color:#7A5310}
+.aviso strong{display:block;margin-bottom:4px;color:inherit}
+
+/* ============================================================
+   BOTÓN VOLVER ARRIBA
+   ============================================================ */
+.btn-top{
+  position:fixed;bottom:24px;right:24px;z-index:90;
+  width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;
+  background:var(--coral);color:#fff;font-size:20px;
+  box-shadow:0 8px 22px rgba(224,90,58,.45);
+  opacity:0;visibility:hidden;transition:all .3s;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn-top.visible{opacity:1;visibility:visible}
+.btn-top:hover{filter:brightness(1.1);transform:translateY(-3px)}
+
+/* ============================================================
+   RESPONSIVE — TABLET GRANDE (1080px)
+   ============================================================ */
+@media(max-width:1080px){
+  .hero-inner{grid-template-columns:1fr;gap:44px}
+  .hero-img{transform:none;max-width:520px;margin:0 auto}
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+  .grid-3{grid-template-columns:repeat(2,1fr)}
+  .galeria-comida{grid-template-columns:repeat(3,1fr)}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:34px}
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET (900px)
+   ============================================================ */
+@media(max-width:900px){
+  :root{--nav-h:68px}
+  .nav-inner{padding:0 16px}
+  .logo-svg{width:40px;height:40px}
+  .logo-txt h2{font-size:15px}
+  .logo-txt span{font-size:8px;letter-spacing:1.8px}
+  .menu > li > a{font-size:13px;padding:8px 11px}
+  .nav-cta{padding:9px 14px;font-size:12.5px}
+  .seccion{padding:56px 0}
+  .fila-info{gap:36px;padding:36px 0}
+  .cta-final{padding:44px 34px}
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET PEQUEÑA (820px) — MENÚ HAMBURGUESA
+   ============================================================ */
+@media(max-width:820px){
+  .btn-menu-movil{display:block}
+  .menu{
+    position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;
+    background:var(--dark);
+    flex-direction:column;align-items:stretch;gap:0;padding:10px;
+    display:none;box-shadow:0 14px 30px rgba(0,0,0,.4);
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    margin:0;
+    z-index:105;
+  }
+  .menu.abierto{display:flex;animation:deslizar .25s ease}
+  @keyframes deslizar{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+  .menu > li > a{
+    padding:15px 18px;border-radius:10px;font-size:15px;
+    justify-content:space-between;
+  }
+  .menu > li > a .flecha{margin-left:auto;font-size:12px}
+  .submenu{
+    position:static;opacity:1;visibility:visible;transform:none;
+    box-shadow:none;background:#0D1B26;padding:4px 0 8px 12px;
+    display:none;border:none;border-left:3px solid var(--coral);
+    margin:4px 0 4px 12px;border-radius:0;
+  }
+  .menu > li:hover .submenu{display:none}
+  .menu > li.desplegado .submenu{display:block}
+  .submenu li a{color:#D0DEE8;padding:12px 14px;font-size:13.5px}
+  .submenu li a:hover{background:var(--hover)}
+  .submenu li a small{color:#9BB0C2}
+  .submenu li a .ico{background:#1E3D57}
+  .nav-cta{margin:12px 10px 20px;text-align:center;padding:14px}
+
+  .fila-info{grid-template-columns:1fr;gap:30px;padding:32px 0}
+  .fila-info.invertida .texto{order:1}
+  .fila-info.invertida .visual{order:2}
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr}
+  .galeria-comida{grid-template-columns:repeat(2,1fr)}
+  .hero h1{font-size:clamp(28px,7vw,34px)}
+  .hero{padding:56px 0 64px}
+  .hero-inner{padding:0 16px;gap:36px}
+  .hero-img img{height:260px}
+  .titulo-seccion h2{font-size:clamp(22px,5vw,26px)}
+  .cabecera-pagina{padding:40px 0 44px}
+  .cabecera-pagina h1{font-size:clamp(22px,5.5vw,27px)}
+  .cta-final{padding:36px 24px;border-radius:16px}
+  .cta-final h2{font-size:clamp(20px,5vw,24px)}
+  .footer-grid{grid-template-columns:1fr;gap:30px}
+  .seccion{padding:48px 0}
+  .visual-caja{padding:0;min-height:200px}
+  .contenedor{padding:0 16px}
+  table.tabla{font-size:13.5px;min-width:520px}
+  table.tabla thead th{padding:12px 14px;font-size:11.5px}
+  table.tabla tbody td{padding:11px 14px}
+  pre{padding:16px 18px;font-size:12.5px;border-radius:10px}
+  .tarjeta{padding:24px 22px}
+  .tarjeta-img img{height:150px}
+  .paso{grid-template-columns:48px 1fr;gap:16px;padding-bottom:28px}
+  .paso-num{width:48px;height:48px;font-size:18px;border-radius:14px}
+  .paso:not(:last-child)::before{left:23px;top:48px}
+  .paso-cuerpo h3{font-size:17px}
+  .btn-top{bottom:18px;right:18px;width:44px;height:44px}
+}
+
+/* ============================================================
+   RESPONSIVE — MÓVIL (600px)
+   ============================================================ */
+@media(max-width:600px){
+  :root{--nav-h:64px}
+  body{font-size:15px}
+  .nav-inner{padding:0 12px}
+  .logo-svg{width:36px;height:36px}
+  .logo-txt h2{font-size:14px;letter-spacing:.5px}
+  .logo-txt span{font-size:7.5px;letter-spacing:1.5px}
+  .logo{margin-right:0}
+  .nav-cta{display:none}
+  .btn-menu-movil{font-size:24px;padding:6px 10px}
+
+  .hero{padding:44px 0 52px}
+  .hero-inner{padding:0 14px;gap:28px}
+  .hero-tag{font-size:11px;padding:6px 12px;letter-spacing:.5px}
+  .hero-botones{flex-direction:column;align-items:stretch;gap:10px}
+  .hero-botones .btn{width:100%;padding:13px 20px;font-size:14px}
+  .hero-stats{gap:24px;justify-content:space-between}
+  .hero-stat{flex:1;min-width:70px;text-align:center}
+  .hero-stat strong{font-size:22px}
+  .hero-stat span{font-size:10.5px;letter-spacing:.3px}
+  .hero-img img{height:200px}
+
+  .contenedor{padding:0 14px}
+  .seccion{padding:40px 0}
+  .seccion.ajustada{padding:32px 0}
+  .titulo-seccion{margin-bottom:32px}
+  .titulo-seccion .etiqueta{font-size:10px;padding:5px 12px;letter-spacing:1.2px}
+  .titulo-seccion h2{font-size:22px}
+  .titulo-seccion p{font-size:14.5px}
+
+  .tarjeta{padding:22px 18px;border-radius:12px}
+  .tarjeta .ico-caja{width:46px;height:46px;font-size:21px;border-radius:11px;margin-bottom:14px}
+  .tarjeta h3{font-size:17px}
+  .tarjeta p,.tarjeta ul li{font-size:13.5px}
+  .tarjeta-modulo .numero{font-size:26px;top:16px;right:16px}
+  .tarjeta-modulo::after{right:20px;bottom:20px}
+  .tarjeta-img img{height:160px}
+
+  .grid{gap:16px}
+
+  .cabecera-pagina{padding:32px 0 36px}
+  .cabecera-pagina .migas{font-size:11.5px}
+  .cabecera-pagina h1{font-size:22px}
+  .cabecera-pagina p{font-size:14.5px}
+
+  .fila-info{padding:28px 0;gap:24px}
+  .fila-info h2{font-size:21px}
+  .fila-info p{font-size:14.5px}
+  .fila-info ul li{font-size:14px;padding:7px 0 7px 30px}
+  .fila-info ul li::before{width:20px;height:20px;font-size:11px;top:7px}
+  .visual-caja{padding:0;min-height:170px;border-radius:14px}
+  .visual-caja img{min-height:170px}
+
+  .cta-final{padding:30px 20px;border-radius:14px}
+  .cta-final h2{font-size:20px}
+  .cta-final p{font-size:14.5px;margin-bottom:22px}
+  .cta-final .botones{flex-direction:column;gap:10px}
+  .cta-final .botones .btn{width:100%}
+
+  .btn{padding:12px 20px;font-size:14px;border-radius:10px}
+  .btn-sm{padding:8px 14px;font-size:12.5px}
+
+  .galeria-comida{grid-template-columns:repeat(2,1fr);gap:12px}
+  .plato img{height:110px}
+  .plato .info{padding:10px 8px 14px}
+  .plato h4{font-size:12.5px}
+  .plato span{font-size:10.5px}
+  .plato .precio{font-size:10.5px;padding:2px 9px}
+
+  .pasos .paso{grid-template-columns:42px 1fr;gap:14px;padding-bottom:24px}
+  .paso-num{width:42px;height:42px;font-size:16px;border-radius:12px}
+  .paso:not(:last-child)::before{left:20px;top:42px;width:2px}
+  .paso-cuerpo h3{font-size:16px}
+  .paso-cuerpo p{font-size:14px}
+  .paso-cuerpo pre{font-size:11.5px;padding:12px 14px}
+
+  .faq-pregunta{padding:15px 18px;gap:12px;font-size:14.5px}
+  .faq-pregunta .signo{width:26px;height:26px;font-size:15px}
+  .faq-respuesta-inner{padding:14px 18px 18px;font-size:14px}
+
+  .aviso{padding:14px 16px;font-size:13.5px;border-radius:8px}
+  .chip{font-size:11.5px;padding:5px 11px;margin:2px}
+
+  table.tabla{font-size:13px;min-width:480px}
+  table.tabla thead th{padding:10px 12px;font-size:11px}
+  table.tabla tbody td{padding:10px 12px}
+  td .tipo{font-size:10.5px;padding:2px 7px}
+
+  pre{padding:14px 16px;font-size:12px;border-radius:8px;line-height:1.6}
+
+  footer{padding:44px 0 22px}
+  .footer-grid{gap:26px;margin-bottom:32px}
+  .footer-marca{margin-bottom:12px}
+  .footer-marca svg{width:36px;height:36px}
+  .footer-marca h3{font-size:15px}
+  footer h4{font-size:12px;margin-bottom:12px}
+  footer ul li{margin-bottom:8px}
+  footer ul li a{font-size:13.5px}
+  footer p{font-size:13.5px}
+  .footer-abajo{flex-direction:column;text-align:center;gap:14px;padding-top:20px;font-size:12px}
+
+  .btn-top{bottom:14px;right:14px;width:42px;height:42px;font-size:18px}
+
+  .menu{padding:8px}
+  .menu > li > a{padding:14px 16px;font-size:14.5px}
+  .submenu li a{padding:11px 12px;font-size:13px}
+  .submenu li a .ico{width:30px;height:30px;font-size:14px}
+  .nav-cta{margin:10px 8px 20px;padding:13px;font-size:14px}
+}
+
+/* ============================================================
+   RESPONSIVE — MÓVIL MUY PEQUEÑO (400px)
+   ============================================================ */
+@media(max-width:400px){
+  :root{--nav-h:60px}
+  .logo-svg{width:32px;height:32px}
+  .logo-txt h2{font-size:13px}
+  .logo-txt span{font-size:7px;letter-spacing:1.2px}
+  .btn-menu-movil{font-size:22px;padding:5px 8px}
+
+  .hero{padding:36px 0 44px}
+  .hero-inner{padding:0 12px}
+  .hero h1{font-size:24px}
+  .hero p.lead{font-size:14px}
+  .hero-tag{font-size:10px;padding:5px 10px}
+  .hero-stats{gap:14px}
+  .hero-stat strong{font-size:19px}
+  .hero-stat span{font-size:9.5px}
+  .hero-img img{height:160px}
+
+  .contenedor{padding:0 12px}
+  .seccion{padding:32px 0}
+  .titulo-seccion h2{font-size:20px}
+  .titulo-seccion p{font-size:13.5px}
+
+  .tarjeta{padding:18px 16px}
+  .tarjeta h3{font-size:16px}
+  .tarjeta-img img{height:140px}
+
+  .galeria-comida{grid-template-columns:1fr 1fr;gap:10px}
+  .plato img{height:90px}
+  .plato h4{font-size:11.5px}
+
+  .cabecera-pagina h1{font-size:20px}
+  .fila-info h2{font-size:19px}
+
+  table.tabla{font-size:12.5px;min-width:440px}
+  pre{font-size:11px;padding:12px 14px}
+
+  .faq-pregunta{padding:13px 14px;font-size:13.5px}
+  .faq-respuesta-inner{padding:12px 14px 16px;font-size:13px}
+
+  .paso-cuerpo pre{font-size:10.5px;padding:10px 12px}
+
+  .footer-abajo{font-size:11.5px}
+}
+
+/* ============================================================
+   MODO LANDSCAPE MÓVIL
+   ============================================================ */
+@media(max-height:500px) and (orientation:landscape){
+  .hero{padding:32px 0 40px}
+  .hero-inner{grid-template-columns:1fr 1fr;gap:24px}
+  .hero h1{font-size:24px}
+  .hero p.lead{font-size:13px;margin-bottom:18px}
+  .hero-botones{margin-bottom:20px}
+  .hero-stats{gap:16px}
+  .menu{overflow-y:scroll}
+}
+
+/* ============================================================
+   ACCESIBILIDAD / REDUCIR MOVIMIENTO
+   ============================================================ */
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
+}
+
+/* ============================================================
+   SCROLLBAR PERSONALIZADA
+   ============================================================ */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:#E8EEF3}
+::-webkit-scrollbar-thumb{background:#C9D6E0;border-radius:5px}
+::-webkit-scrollbar-thumb:hover{background:var(--celeste)}
+
+/* ============================================================
+   FOCUS VISIBLE
+   ============================================================ */
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:3px solid rgba(46,125,168,.6);
+  outline-offset:2px;
+  border-radius:6px;
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAVBAR
+     ============================================================ -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="logo" href="#/inicio" onclick="cerrarMenu()">
+      <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle class="ring-outer" cx="95" cy="105" r="78"/>
+        <path class="ring-arc" d="M 60 50 A 62 62 0 0 1 155 105"/>
+        <path class="receipt" d="M 118 40 L 178 30 L 178 128 L 118 138 Z"/>
+        <path class="receipt" d="M 118 40 L 124 32 L 132 40 L 140 32 L 148 40 L 156 32 L 164 40 L 172 32 L 178 30 L 178 128 L 118 138 Z" style="fill:var(--crema)"/>
+        <circle class="dot-coral" cx="132" cy="58" r="7"/>
+        <circle class="dot-coral" cx="132" cy="78" r="7"/>
+        <circle class="dot-amber" cx="132" cy="98" r="7"/>
+        <line class="line" x1="150" y1="58" x2="170" y2="56"/>
+        <line class="line" x1="150" y1="78" x2="170" y2="76"/>
+        <line class="line" x1="150" y1="98" x2="170" y2="96"/>
+        <line class="dashed" x1="124" y1="112" x2="172" y2="108"/>
+        <line class="line" x1="140" y1="122" x2="170" y2="120"/>
+        <rect class="bar-1" x="22" y="72" width="48" height="11" rx="5.5"/>
+        <rect class="bar-2" x="22" y="90" width="42" height="11" rx="5.5"/>
+        <rect class="bar-3" x="22" y="108" width="38" height="11" rx="5.5"/>
+        <path class="cloche-plate" d="M 62 128 L 138 128 L 132 142 L 68 142 Z"/>
+        <ellipse class="cloche-base" cx="100" cy="126" rx="42" ry="7"/>
+        <path class="cloche" d="M 68 120 A 32 32 0 0 1 132 120 Z"/>
+        <circle class="cloche" cx="100" cy="82" r="7"/>
+        <rect class="cloche" x="95" y="86" width="10" height="6" rx="2"/>
+        <path class="cloche-shine" d="M 78 112 Q 82 96 96 92"/>
+        <circle class="check-circle" cx="146" cy="142" r="34"/>
+        <polyline class="check-mark" points="130,142 142,154 164,130"/>
+      </svg>
+      <div class="logo-txt">
+        <h2>Order<em>Fast</em></h2>
+        <span>RESTAURANT SYSTEM</span>
+      </div>
+    </a>
+
+    <button class="btn-menu-movil" id="btnMenu" onclick="alternarMenu()" aria-label="Abrir menú">☰</button>
+
+    <ul class="menu" id="menu">
+      <li><a href="#/inicio" data-ruta="inicio">Inicio</a></li>
+
+      <li>
+        <a href="#/producto" data-ruta="producto">
+          Producto <span class="flecha">▾</span>
+        </a>
+        <ul class="submenu">
+          <li><a href="#/producto">
+            <span class="ico">⭐</span>
+            <div>Vista general<small>Todo lo que incluye OrderFast</small></div>
+          </a></li>
+          <li><a href="#/caracteristicas">
+            <span class="ico">🎯</span>
+            <div>Características<small>Funciones destacadas</small></div>
+          </a></li>
+          <li><a href="#/tecnologia">
+            <span class="ico">⚙️</span>
+            <div>Tecnología<small>Python, Tkinter y MySQL</small></div>
+          </a></li>
+          <li><a href="#/interfaz">
+            <span class="ico">🖥️</span>
+            <div>Interfaz<small>Recorrido por las pantallas</small></div>
+          </a></li>
+        </ul>
+      </li>
+
+      <li>
+        <a href="#/modulos" data-ruta="modulos">
+          Módulos <span class="flecha">▾</span>
+        </a>
+        <ul class="submenu">
+          <li><a href="#/modulos">
+            <span class="ico">📦</span>
+            <div>Todos los módulos<small>Resumen de los 6 módulos</small></div>
+          </a></li>
+          <li class="separador"></li>
+          <li><a href="#/modulo-empleados">
+            <span class="ico">👨‍🍳</span>
+            <div>Empleados<small>Personal del restaurante</small></div>
+          </a></li>
+          <li><a href="#/modulo-mesas">
+            <span class="ico">▣</span>
+            <div>Mesas<small>Capacidad y estado</small></div>
+          </a></li>
+          <li><a href="#/modulo-platillos">
+            <span class="ico">🍔</span>
+            <div>Platillos<small>Menú, precios y stock</small></div>
+          </a></li>
+          <li><a href="#/modulo-pedidos">
+            <span class="ico">🧾</span>
+            <div>Pedidos<small>Carrito y cobro</small></div>
+          </a></li>
+          <li><a href="#/modulo-reportes">
+            <span class="ico">📊</span>
+            <div>Reportes<small>Ventas y estadísticas</small></div>
+          </a></li>
+          <li><a href="#/modulo-usuarios">
+            <span class="ico">👤</span>
+            <div>Usuarios<small>Cuentas y permisos</small></div>
+          </a></li>
+        </ul>
+      </li>
+
+      <li>
+        <a href="#/instalacion" data-ruta="instalacion">
+          Documentación <span class="flecha">▾</span>
+        </a>
+        <ul class="submenu">
+          <li><a href="#/instalacion">
+            <span class="ico">🚀</span>
+            <div>Instalación<small>Guía paso a paso</small></div>
+          </a></li>
+          <li><a href="#/requisitos">
+            <span class="ico">📋</span>
+            <div>Requisitos<small>Hardware y software</small></div>
+          </a></li>
+          <li><a href="#/basedatos">
+            <span class="ico">🗄️</span>
+            <div>Base de datos<small>Tablas y relaciones</small></div>
+          </a></li>
+          <li><a href="#/manual">
+            <span class="ico">📖</span>
+            <div>Manual de uso<small>Primeros pasos</small></div>
+          </a></li>
+        </ul>
+      </li>
+
+      <li><a href="#/faq" data-ruta="faq">FAQ</a></li>
+      <li><a href="#/contacto" data-ruta="contacto">Contacto</a></li>
+    </ul>
+
+    <a class="nav-cta" href="#/descarga">Descargar</a>
+  </div>
+</nav>
+
+<div class="overlay-menu" id="overlayMenu" onclick="cerrarMenu()"></div>
+
+
+<!-- ============================================================
+     PÁGINA: INICIO
+     ============================================================ -->
+<section class="pagina activa" id="pagina-inicio">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-tag">
+          <span class="punto"></span> ORDERFAST · VERSIÓN 1.0
+        </div>
+        <h1>El sistema que <em>acelera</em> tu restaurante</h1>
+        <p class="lead">
+          OrderFast reúne en una sola aplicación de escritorio la gestión de
+          empleados, mesas, platillos, pedidos, reportes y usuarios. Todo
+          conectado a una base de datos MySQL real, sin depender de internet.
+        </p>
+        <div class="hero-botones">
+          <a href="#/producto" class="btn btn-coral">Explorar el producto →</a>
+          <a href="#/instalacion" class="btn btn-borde">Ver instalación</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><strong>6</strong><span>MÓDULOS</span></div>
+          <div class="hero-stat"><strong>8</strong><span>TABLAS SQL</span></div>
+          <div class="hero-stat"><strong>1</strong><span>VENTANA</span></div>
+          <div class="hero-stat"><strong>SHA-256</strong><span>SEGURIDAD</span></div>
+        </div>
+      </div>
+
+      <div class="hero-img">
+        <img src="img/1.jpg" alt="Restaurante moderno con mesas y ambiente acogedor">
+      </div>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+    <div class="titulo-seccion">
+      <span class="etiqueta">¿QUÉ ES ORDERFAST?</span>
+      <h2>Una solución completa, sin complicaciones</h2>
+      <p>
+        Diseñado para restaurantes pequeños y medianos que necesitan controlar
+        su operación diaria sin depender de sistemas costosos.
+      </p>
+    </div>
+
+    <div class="grid grid-3">
+      <div class="tarjeta">
+        <div class="ico-caja ico-azul">🎯</div>
+        <h3>Enfoque práctico</h3>
+        <p>Cada pantalla resuelve una tarea concreta del día a día. Sin menús
+           escondidos ni pasos innecesarios.</p>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-verde">⚡</div>
+        <h3>Rápido de usar</h3>
+        <p>Los formularios validan los datos antes de guardar y las tablas se
+           actualizan al instante.</p>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-coral">🔐</div>
+        <h3>Acceso controlado</h3>
+        <p>Las contraseñas se almacenan cifradas con SHA-256 y cada usuario
+           tiene un rol definido.</p>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-ambar">📦</div>
+        <h3>Inventario automático</h3>
+        <p>Al guardar un pedido, el sistema descuenta las existencias y marca
+           la mesa como ocupada.</p>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-morado">📊</div>
+        <h3>Datos para decidir</h3>
+        <p>El módulo de reportes calcula ventas totales, pedidos cobrados y
+           ticket promedio.</p>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-rojo">🧩</div>
+        <h3>Código claro</h3>
+        <p>Un único archivo Python bien organizado por clases y secciones.
+           Fácil de mantener.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- GALERÍA DE PLATILLOS CON IMÁGENES -->
+  <div class="seccion ajustada contenedor">
+    <div class="titulo-seccion">
+      <span class="etiqueta">MENÚ VISUAL</span>
+      <h2>Algunos platillos que puedes gestionar</h2>
+      <p>Cada producto tiene categoría, precio y control de existencias.</p>
+    </div>
+    <div class="galeria-comida">
+      <div class="plato">
+        <img src="img/10.jpg" alt="Hamburguesa artesanal">
+        <div class="info">
+          <h4>Hamburguesa Clásica</h4>
+          <span>Categoría: Hamburguesas</span>
+          <div class="precio">$8.50</div>
+        </div>
+      </div>
+      <div class="plato">
+        <img src="img/11.jpg" alt="Pizza pepperoni">
+        <div class="info">
+          <h4>Pizza Pepperoni</h4>
+          <span>Categoría: Pizzas</span>
+          <div class="precio">$12.00</div>
+        </div>
+      </div>
+      <div class="plato">
+        <img src="img/12.jpg" alt="Ensalada fresca">
+        <div class="info">
+          <h4>Ensalada César</h4>
+          <span>Categoría: Ensaladas</span>
+          <div class="precio">$6.75</div>
+        </div>
+      </div>
+      <div class="plato">
+        <img src="img/13.jpg" alt="Postre de chocolate">
+        <div class="info">
+          <h4>Volcán de Chocolate</h4>
+          <span>Categoría: Postres</span>
+          <div class="precio">$5.25</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+    <div class="titulo-seccion">
+      <span class="etiqueta">MÓDULOS PRINCIPALES</span>
+      <h2>Seis áreas de trabajo</h2>
+      <p>Haz clic en cualquier módulo para ver el detalle completo.</p>
+    </div>
+
+    <div class="grid grid-3">
+      <a href="#/modulo-empleados" class="tarjeta tarjeta-modulo">
+        <span class="numero">01</span>
+        <div class="ico-caja ico-azul">👨‍🍳</div>
+        <h3>Empleados</h3>
+        <p>Registro del personal con cargo, salario y estado.</p>
+      </a>
+      <a href="#/modulo-mesas" class="tarjeta tarjeta-modulo">
+        <span class="numero">02</span>
+        <div class="ico-caja ico-verde">▣</div>
+        <h3>Mesas</h3>
+        <p>Número, capacidad, ubicación y disponibilidad.</p>
+      </a>
+      <a href="#/modulo-platillos" class="tarjeta tarjeta-modulo">
+        <span class="numero">03</span>
+        <div class="ico-caja ico-coral">🍔</div>
+        <h3>Platillos</h3>
+        <p>Menú con categorías, precios y existencias.</p>
+      </a>
+      <a href="#/modulo-pedidos" class="tarjeta tarjeta-modulo">
+        <span class="numero">04</span>
+        <div class="ico-caja ico-ambar">🧾</div>
+        <h3>Pedidos</h3>
+        <p>Carrito de venta con múltiples platillos.</p>
+      </a>
+      <a href="#/modulo-reportes" class="tarjeta tarjeta-modulo">
+        <span class="numero">05</span>
+        <div class="ico-caja ico-morado">📊</div>
+        <h3>Reportes</h3>
+        <p>Ventas acumuladas y ticket promedio.</p>
+      </a>
+      <a href="#/modulo-usuarios" class="tarjeta tarjeta-modulo">
+        <span class="numero">06</span>
+        <div class="ico-caja ico-rojo">👤</div>
+        <h3>Usuarios</h3>
+        <p>Cuentas con rol y contraseña cifrada.</p>
+      </a>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+    <div class="cta-final">
+      <h2>¿Listo para conocer OrderFast a fondo?</h2>
+      <p>
+        Recorre cada módulo, revisa el esquema de la base de datos y sigue la
+        guía de instalación paso a paso.
+      </p>
+      <div class="botones">
+        <a href="#/modulos" class="btn btn-coral">Ver todos los módulos</a>
+        <a href="#/basedatos" class="btn btn-borde">Explorar base de datos</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: PRODUCTO
+     ============================================================ -->
+<section class="pagina" id="pagina-producto">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / Producto</div>
+      <h1>Vista general del producto</h1>
+      <p>Qué es OrderFast, a quién está dirigido y por qué puede ayudar a tu
+         restaurante a operar mejor.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+
+    <div class="fila-info">
+      <div class="texto">
+        <h2>¿A quién está dirigido?</h2>
+        <p>
+          OrderFast está pensado para restaurantes pequeños y medianos que
+          quieren dejar atrás las libretas de papel y las hojas de cálculo.
+        </p>
+        <ul>
+          <li>Restaurantes familiares con 5 a 30 mesas</li>
+          <li>Cafeterías y comedores con menú fijo</li>
+          <li>Food trucks que necesitan control de inventario</li>
+          <li>Negocios de comida que recién empiezan</li>
+        </ul>
+      </div>
+      <div class="visual">
+        <div class="visual-caja">
+          <img src="img/2.jpg" alt="Interior de restaurante familiar">
+        </div>
+      </div>
+    </div>
+
+    <div class="fila-info invertida">
+      <div class="texto">
+        <h2>¿Qué problema resuelve?</h2>
+        <p>
+          La mayoría de restaurantes pequeños pierden dinero por errores de
+          inventario, mesas mal asignadas o falta de visibilidad sobre sus
+          ventas reales.
+        </p>
+        <ul>
+          <li>Elimina las libretas de pedidos escritos a mano</li>
+          <li>Evita vender platillos sin existencia</li>
+          <li>Muestra en tiempo real qué mesas están ocupadas</li>
+          <li>Permite saber cuánto se ha vendido sin hacer cuentas</li>
+        </ul>
+      </div>
+      <div class="visual">
+        <div class="visual-caja">
+          <img src="img/3.jpg" alt="Persona tomando nota de un pedido">
+        </div>
+      </div>
+    </div>
+
+    <div class="fila-info">
+      <div class="texto">
+        <h2>¿En qué se diferencia?</h2>
+        <p>
+          A diferencia de otros sistemas, OrderFast no requiere servidor web,
+          ni conexión a internet, ni suscripciones mensuales.
+        </p>
+        <ul>
+          <li>Sin cuotas mensuales: se instala una vez y funciona</li>
+          <li>Funciona en red local, sin depender de la nube</li>
+          <li>Un solo archivo Python fácil de mantener</li>
+          <li>Interfaz en español para usuarios no técnicos</li>
+        </ul>
+      </div>
+      <div class="visual">
+        <div class="visual-caja">
+          <img src="img/4.jpg" alt="Pantalla de computadora con código">
+        </div>
+      </div>
+    </div>
+
+    <h3 class="mb-3 mt-4" style="font-size:clamp(18px,2.5vw,22px)">Beneficios en números</h3>
+    <div class="grid grid-4 mb-4">
+      <div class="tarjeta">
+        <div class="ico-caja ico-coral">⏱️</div>
+        <h3 style="font-size:16px">Menos tiempo</h3>
+        <p style="font-size:13.5px">Registrar un pedido toma menos de 30 segundos.</p>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-verde">📉</div>
+        <h3 style="font-size:16px">Menos errores</h3>
+        <p style="font-size:13.5px">El inventario se actualiza solo.</p>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-ambar">📈</div>
+        <h3 style="font-size:16px">Más control</h3>
+        <p style="font-size:13.5px">Reportes al instante de ventas.</p>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-azul">💰</div>
+        <h3 style="font-size:16px">Cero costos</h3>
+        <p style="font-size:13.5px">Sin licencias ni suscripciones.</p>
+      </div>
+    </div>
+
+    <div class="aviso">
+      <strong>💡 Sobre el nombre "OrderFast"</strong>
+      "Order" viene de la idea de tomar pedidos y "Fast" hace referencia a la
+      velocidad con la que el sistema permite registrar y cobrar una orden.
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: CARACTERÍSTICAS
+     ============================================================ -->
+<section class="pagina" id="pagina-caracteristicas">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / Producto / Características</div>
+      <h1>Características del sistema</h1>
+      <p>Todo lo que OrderFast puede hacer por la operación diaria de tu
+         restaurante.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+
+    <div class="fila-info">
+      <div class="texto">
+        <h2>Gestión integral en una sola ventana</h2>
+        <p>
+          OrderFast trabaja con una única ventana principal. El menú lateral
+          cambia el contenido sin cerrar ni abrir nada.
+        </p>
+        <ul>
+          <li>Barra lateral fija con los 6 módulos</li>
+          <li>Encabezado dinámico con la sección actual</li>
+          <li>Nombre y rol del usuario siempre visible</li>
+          <li>Cierre de sesión sin reiniciar</li>
+        </ul>
+      </div>
+      <div class="visual">
+        <div class="visual-caja">
+          <img src="img/5.jpg" alt="Panel de control con gráficos">
+        </div>
+      </div>
+    </div>
+
+    <div class="fila-info invertida">
+      <div class="texto">
+        <h2>Seguridad con hash SHA-256</h2>
+        <p>
+          Las contraseñas nunca se guardan en texto plano. Se convierten con
+          SHA-256 antes de almacenarse.
+        </p>
+        <ul>
+          <li>Función <code>hash_password()</code></li>
+          <li>Comparación por hash en el login</li>
+          <li>Usuarios inactivos no pueden entrar</li>
+          <li>Roles: Administrador y Empleado</li>
+        </ul>
+      </div>
+      <div class="visual">
+        <div class="visual-caja">
+          <img src="img/6.jpg" alt="Candado de seguridad digital">
+        </div>
+      </div>
+    </div>
+
+    <div class="fila-info">
+      <div class="texto">
+        <h2>Base de datos relacional en MySQL</h2>
+        <p>
+          Toda la información vive en <code>restaurante_db</code> con ocho
+          tablas relacionadas mediante claves foráneas.
+        </p>
+        <ul>
+          <li>Conexión con <code>mysql-connector-python</code></li>
+          <li>Consultas parametrizadas</li>
+          <li>Transacciones con commit y rollback</li>
+          <li>Manejo de errores claro</li>
+        </ul>
+      </div>
+      <div class="visual">
+        <div class="visual-caja">
+          <img src="img/7.jpg" alt="Servidores de base de datos">
+        </div>
+      </div>
+    </div>
+
+    <div class="fila-info invertida">
+      <div class="texto">
+        <h2>Pedidos con carrito múltiple</h2>
+        <p>
+          El módulo de pedidos funciona como un punto de venta con carrito
+          que calcula subtotales y total en tiempo real.
+        </p>
+        <ul>
+          <li>Validación de existencias</li>
+          <li>Suma automática de productos repetidos</li>
+          <li>Descuento de stock al confirmar</li>
+          <li>Cambio de mesa a "Ocupada" automático</li>
+        </ul>
+      </div>
+      <div class="visual">
+        <div class="visual-caja">
+          <img src="img/4.jpg" alt="Persona usando punto de venta">
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: TECNOLOGÍA
+     ============================================================ -->
+<section class="pagina" id="pagina-tecnologia">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / Producto / Tecnología</div>
+      <h1>Tecnología utilizada</h1>
+      <p>El stack técnico sobre el que está construido OrderFast.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+    <div class="grid grid-2">
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-azul">🐍</div>
+        <h3>Python 3</h3>
+        <p>Lenguaje principal del proyecto. Se aprovechan clases y funciones
+           auxiliares para mantener el código ordenado.</p>
+        <ul>
+          <li>Programación orientada a objetos</li>
+          <li>Manejo de excepciones</li>
+          <li>Uso de <code>datetime</code></li>
+        </ul>
+      </div>
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-verde">🖼️</div>
+        <h3>Tkinter + ttk</h3>
+        <p>Interfaz gráfica nativa de Python. Personalizada con colores
+           propios y widgets ttk.</p>
+        <ul>
+          <li><code>ttk.Treeview</code> para tablas</li>
+          <li><code>ttk.Combobox</code> y <code>ttk.Spinbox</code></li>
+          <li>Estilos con <code>ttk.Style</code></li>
+        </ul>
+      </div>
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-coral">🐬</div>
+        <h3>MySQL + mysql-connector</h3>
+        <p>Motor de base de datos relacional con el conector oficial de
+           Oracle para Python.</p>
+        <ul>
+          <li>Base de datos <code>restaurante_db</code></li>
+          <li>8 tablas con claves foráneas</li>
+          <li>CRUD completo</li>
+        </ul>
+      </div>
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-ambar">🔒</div>
+        <h3>hashlib (SHA-256)</h3>
+        <p>Módulo estándar de Python usado para cifrar las contraseñas antes
+           de guardarlas.</p>
+        <ul>
+          <li>Función <code>hash_password()</code></li>
+          <li>Hash de 64 caracteres hexadecimales</li>
+          <li>Nunca se guarda la clave original</li>
+        </ul>
+      </div>
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-morado">🧩</div>
+        <h3>Arquitectura del código</h3>
+        <p>Un único archivo <code>.py</code> organizado en tres bloques.</p>
+        <ul>
+          <li>Clase <code>BaseDatos</code></li>
+          <li>Clase <code>Campo</code></li>
+          <li>Clase <code>RestauranteApp</code></li>
+        </ul>
+      </div>
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-rojo">📁</div>
+        <h3>Sin dependencias excesivas</h3>
+        <p>Solo se necesita un paquete externo, lo que simplifica la
+           instalación.</p>
+        <ul>
+          <li><code>tkinter</code> incluido con Python</li>
+          <li><code>hashlib</code> y <code>datetime</code> estándar</li>
+          <li><code>mysql-connector-python</code> único pip install</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="aviso mt-4">
+      <strong>💡 ¿Por qué Tkinter y no una interfaz web?</strong>
+      Porque el objetivo es tener una aplicación de escritorio que funcione sin
+      navegador, sin servidor web y sin conexión a internet.
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: INTERFAZ
+     ============================================================ -->
+<section class="pagina" id="pagina-interfaz">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / Producto / Interfaz</div>
+      <h1>Recorrido por la interfaz</h1>
+      <p>Así se ve cada parte del sistema y para qué sirve.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+
+    <div class="grid grid-2 mb-4">
+      <div class="tarjeta tarjeta-img">
+        <img src="img/4.jpg" alt="Pantalla de inicio de sesión">
+        <div class="cuerpo">
+          <h3>Pantalla de inicio de sesión</h3>
+          <p>Dividida en dos mitades. A la izquierda el logotipo y a la derecha
+             la tarjeta con los campos de usuario y contraseña.</p>
+          <ul>
+            <li>Campo de contraseña enmascarado</li>
+            <li>Se puede ingresar con Enter</li>
+            <li>Mensajes claros si hay error</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tarjeta tarjeta-img">
+        <img src="img/5.jpg" alt="Panel principal con métricas">
+        <div class="cuerpo">
+          <h3>Panel principal (Dashboard)</h3>
+          <p>Primera pantalla tras iniciar sesión. Resume el estado del
+             restaurante en cuatro tarjetas y muestra los pedidos recientes.</p>
+          <ul>
+            <li>Empleados, mesas, platillos y pedidos</li>
+            <li>Tabla con los últimos 10 pedidos</li>
+            <li>Acciones rápidas a los módulos</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tarjeta tarjeta-img">
+        <img src="img/2.jpg" alt="Mesas de restaurante">
+        <div class="cuerpo">
+          <h3>Barra lateral de navegación</h3>
+          <p>Presente en todas las pantallas internas. Muestra el logotipo, el
+             usuario conectado y los botones de cada módulo.</p>
+          <ul>
+            <li>Iconos emoji de identificación rápida</li>
+            <li>Botón de Usuarios solo para Admin</li>
+            <li>Botón de cerrar sesión al pie</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tarjeta tarjeta-img">
+        <img src="img/1.jpg" alt="Formulario y tabla de datos">
+        <div class="cuerpo">
+          <h3>Formulario + tabla en paralelo</h3>
+          <p>Todos los módulos usan el mismo patrón: formulario a la izquierda
+             y tabla de registros a la derecha.</p>
+          <ul>
+            <li>Doble clic carga los datos</li>
+            <li>Guardar sirve para crear y editar</li>
+            <li>Limpiar vacía el formulario</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="titulo-seccion">
+      <span class="etiqueta">PALETA DE COLORES</span>
+      <h2>Identidad visual del sistema</h2>
+      <p>Los colores están definidos como constantes al inicio del archivo.</p>
+    </div>
+
+    <div class="tabla-envoltura">
+      <table class="tabla">
+        <thead>
+          <tr><th>Constante</th><th>Código</th><th>Uso principal</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>COLOR_AZUL</code></td><td><span class="tipo">#1B3A57</span></td><td>Títulos y encabezados</td></tr>
+          <tr><td><code>COLOR_CELESTE</code></td><td><span class="tipo">#2E7DA8</span></td><td>Foco y acentos</td></tr>
+          <tr><td><code>COLOR_CORAL</code></td><td><span class="tipo">#E05A3A</span></td><td>Botones principales</td></tr>
+          <tr><td><code>COLOR_VERDE</code></td><td><span class="tipo">#1F9D7A</span></td><td>Guardar y estados activos</td></tr>
+          <tr><td><code>COLOR_AMBAR</code></td><td><span class="tipo">#E89B2A</span></td><td>Acentos y advertencias</td></tr>
+          <tr><td><code>COLOR_ROJO</code></td><td><span class="tipo">#C0392B</span></td><td>Eliminar y errores</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: MÓDULOS (RESUMEN)
+     ============================================================ -->
+<section class="pagina" id="pagina-modulos">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / Módulos</div>
+      <h1>Los seis módulos del sistema</h1>
+      <p>Cada módulo cubre un área específica de la operación del restaurante.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+    <div class="grid grid-2">
+
+      <a href="#/modulo-empleados" class="tarjeta tarjeta-modulo">
+        <span class="numero">01</span>
+        <div class="ico-caja ico-azul">👨‍🍳</div>
+        <h3>Empleados</h3>
+        <p>Administra el personal: nombres, apellidos, teléfono, cargo,
+           salario y estado laboral.</p>
+        <ul>
+          <li>Fecha de ingreso automática</li>
+          <li>Estado Activo / Inactivo</li>
+          <li>Eliminación con confirmación</li>
+        </ul>
+      </a>
+
+      <a href="#/modulo-mesas" class="tarjeta tarjeta-modulo">
+        <span class="numero">02</span>
+        <div class="ico-caja ico-verde">▣</div>
+        <h3>Mesas</h3>
+        <p>Define cada mesa con número, capacidad máxima y ubicación dentro
+           del restaurante.</p>
+        <ul>
+          <li>Cuatro estados de ocupación</li>
+          <li>Ubicación libre</li>
+          <li>Base para el módulo de pedidos</li>
+        </ul>
+      </a>
+
+      <a href="#/modulo-platillos" class="tarjeta tarjeta-modulo">
+        <span class="numero">03</span>
+        <div class="ico-caja ico-coral">🍔</div>
+        <h3>Platillos</h3>
+        <p>Construye el menú completo con categorías, descripciones, precios
+           y existencias.</p>
+        <ul>
+          <li>Ocho categorías predefinidas</li>
+          <li>Precio y existencia con validación</li>
+          <li>Disponible / No disponible</li>
+        </ul>
+      </a>
+
+      <a href="#/modulo-pedidos" class="tarjeta tarjeta-modulo">
+        <span class="numero">04</span>
+        <div class="ico-caja ico-ambar">🧾</div>
+        <h3>Pedidos</h3>
+        <p>El corazón del sistema. Registra ventas con múltiples platillos
+           y actualiza el inventario.</p>
+        <ul>
+          <li>Carrito con subtotales en vivo</li>
+          <li>Descuento automático de stock</li>
+          <li>Historial de últimos pedidos</li>
+        </ul>
+      </a>
+
+      <a href="#/modulo-reportes" class="tarjeta tarjeta-modulo">
+        <span class="numero">05</span>
+        <div class="ico-caja ico-morado">📊</div>
+        <h3>Reportes</h3>
+        <p>Consulta el desempeño del negocio a partir de los pedidos
+           marcados como pagados.</p>
+        <ul>
+          <li>Total de pedidos cobrados</li>
+          <li>Ventas acumuladas</li>
+          <li>Ticket promedio</li>
+        </ul>
+      </a>
+
+      <a href="#/modulo-usuarios" class="tarjeta tarjeta-modulo">
+        <span class="numero">06</span>
+        <div class="ico-caja ico-rojo">👤</div>
+        <h3>Usuarios</h3>
+        <p>Exclusivo para Administradores. Crea y gestiona las cuentas del
+           sistema.</p>
+        <ul>
+          <li>Roles Administrador y Empleado</li>
+          <li>Contraseñas cifradas SHA-256</li>
+          <li>Activar, desactivar y eliminar</li>
+        </ul>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: MÓDULO EMPLEADOS
+     ============================================================ -->
+<section class="pagina" id="pagina-modulo-empleados">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / <a href="#/modulos">Módulos</a> / Empleados</div>
+      <h1>Módulo de Empleados</h1>
+      <p>Administra el personal que trabaja en el restaurante.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+    <div class="fila-info">
+      <div class="texto">
+        <h2>¿Qué permite hacer?</h2>
+        <p>
+          Es el módulo más sencillo del sistema pero también el primero que se
+          debe llenar. Sigue el patrón clásico de formulario + tabla.
+        </p>
+        <ul>
+          <li>Registrar un empleado nuevo con todos sus datos</li>
+          <li>Editar haciendo doble clic en la tabla</li>
+          <li>Marcar como Activo o Inactivo sin borrar</li>
+          <li>Eliminar con confirmación</li>
+          <li>Ver el salario formateado</li>
+        </ul>
+      </div>
+      <div class="visual">
+        <div class="visual-caja">
+          <img src="img/8.jpg" alt="Equipo de cocina trabajando">
+        </div>
+      </div>
+    </div>
+
+    <h3 class="mb-3" style="font-size:clamp(18px,2.5vw,22px)">Campos del formulario</h3>
+    <div class="tabla-envoltura mb-4">
+      <table class="tabla">
+        <thead>
+          <tr><th>Campo</th><th>Tipo</th><th>Obligatorio</th><th>Descripción</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Nombres</td><td><span class="tipo">texto</span></td><td>Sí</td><td>Nombres del empleado</td></tr>
+          <tr><td>Apellidos</td><td><span class="tipo">texto</span></td><td>Sí</td><td>Apellidos del empleado</td></tr>
+          <tr><td>Teléfono</td><td><span class="tipo">texto</span></td><td>No</td><td>Número de contacto</td></tr>
+          <tr><td>Cargo</td><td><span class="tipo">texto</span></td><td>Sí</td><td>Puesto que desempeña</td></tr>
+          <tr><td>Salario</td><td><span class="tipo">decimal</span></td><td>Sí</td><td>Monto numérico</td></tr>
+          <tr><td>Estado</td><td><span class="tipo">lista</span></td><td>Sí</td><td>Activo o Inactivo</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="mb-3" style="font-size:clamp(18px,2.5vw,22px)">Consultas SQL que utiliza</h3>
+    <pre><code>-- Listar todos los empleados
+SELECT id_empleado, nombres, apellidos, telefono,
+       cargo, salario, estado
+FROM empleado
+ORDER BY id_empleado DESC;
+
+-- Insertar un empleado nuevo
+INSERT INTO empleado
+(nombres, apellidos, telefono, cargo, salario, estado, fecha_ingreso)
+VALUES (%s, %s, %s, %s, %s, %s, CURDATE());
+
+-- Actualizar un empleado
+UPDATE empleado
+SET nombres=%s, apellidos=%s, telefono=%s,
+    cargo=%s, salario=%s, estado=%s
+WHERE id_empleado=%s;</code></pre>
+
+    <div class="aviso verde mt-4">
+      <strong>✓ Validaciones aplicadas</strong>
+      El sistema no permite guardar si faltan nombres, apellidos o cargo.
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: MÓDULO MESAS
+     ============================================================ -->
+<section class="pagina" id="pagina-modulo-mesas">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / <a href="#/modulos">Módulos</a> / Mesas</div>
+      <h1>Módulo de Mesas</h1>
+      <p>Controla cuántas mesas tiene el restaurante y en qué estado están.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+    <div class="fila-info">
+      <div class="texto">
+        <h2>¿Qué permite hacer?</h2>
+        <p>
+          Define la infraestructura física del restaurante. Cada mesa que
+          registres aparecerá como opción en el módulo de pedidos.
+        </p>
+        <ul>
+          <li>Registrar mesas con número único y capacidad</li>
+          <li>Indicar la ubicación física</li>
+          <li>Cambiar el estado según la situación real</li>
+          <li>Eliminar mesas que ya no existen</li>
+        </ul>
+      </div>
+      <div class="visual">
+        <div class="visual-caja">
+          <img src="img/2.jpg" alt="Mesas de restaurante">
+        </div>
+      </div>
+    </div>
+
+    <h3 class="mb-3" style="font-size:clamp(18px,2.5vw,22px)">Estados posibles de una mesa</h3>
+    <div class="grid grid-4 mb-4">
+      <div class="tarjeta">
+        <div class="ico-caja ico-verde">✓</div>
+        <h3 style="font-size:16px">Disponible</h3>
+        <p style="font-size:13.5px">La mesa está libre.</p>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-ambar">●</div>
+        <h3 style="font-size:16px">Ocupada</h3>
+        <p style="font-size:13.5px">Hay clientes sentados.</p>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-azul">🕐</div>
+        <h3 style="font-size:16px">Reservada</h3>
+        <p style="font-size:13.5px">Apartada para un cliente.</p>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-rojo">🔧</div>
+        <h3 style="font-size:16px">Mantenimiento</h3>
+        <p style="font-size:13.5px">No se puede usar temporalmente.</p>
+      </div>
+    </div>
+
+    <div class="aviso">
+      <strong>🔗 Relación con Pedidos</strong>
+      Cuando guardas un pedido, el sistema ejecuta automáticamente un
+      <code>UPDATE mesa SET estado='Ocupada'</code>. Al cobrar en Reportes
+      la mesa vuelve a <code>Disponible</code>.
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: MÓDULO PLATILLOS
+     ============================================================ -->
+<section class="pagina" id="pagina-modulo-platillos">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / <a href="#/modulos">Módulos</a> / Platillos</div>
+      <h1>Módulo de Platillos</h1>
+      <p>Construye y mantén el menú con precios y control de existencias.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+    <div class="fila-info">
+      <div class="texto">
+        <h2>¿Qué permite hacer?</h2>
+        <p>
+          Es el catálogo de productos vendibles. Cada platillo tiene precio y
+          existencia, y solo aparece en pedidos si está Disponible.
+        </p>
+        <ul>
+          <li>Registrar platillos con nombre y categoría</li>
+          <li>Definir precio y existencia</li>
+          <li>Marcar como No disponibles temporalmente</li>
+          <li>Eliminar platillos que ya no se ofrecen</li>
+        </ul>
+      </div>
+      <div class="visual">
+        <div class="visual-caja">
+          <img src="img/9.jpg" alt="Platillos variados">
+        </div>
+      </div>
+    </div>
+
+    <h3 class="mb-3" style="font-size:clamp(18px,2.5vw,22px)">Categorías disponibles</h3>
+    <div class="mb-4">
+      <span class="chip">🍔 Hamburguesas</span>
+      <span class="chip">🍕 Pizzas</span>
+      <span class="chip">🍽️ Platos fuertes</span>
+      <span class="chip">🍝 Pastas</span>
+      <span class="chip">🥗 Ensaladas</span>
+      <span class="chip">🥤 Bebidas</span>
+      <span class="chip">🍰 Postres</span>
+      <span class="chip">📦 Otros</span>
+    </div>
+
+    <h3 class="mb-3" style="font-size:clamp(18px,2.5vw,22px)">Descuento automático de existencias</h3>
+    <pre><code>UPDATE platillo
+SET existencia = existencia - %s
+WHERE id_platillo = %s;</code></pre>
+
+    <div class="aviso ambar mt-4">
+      <strong>⚠️ Validación de stock en el carrito</strong>
+      Antes de agregar un platillo al pedido, el sistema verifica que la
+      cantidad solicitada no supere la existencia disponible.
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: MÓDULO PEDIDOS
+     ============================================================ -->
+<section class="pagina" id="pagina-modulo-pedidos">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / <a href="#/modulos">Módulos</a> / Pedidos</div>
+      <h1>Módulo de Pedidos</h1>
+      <p>El corazón del sistema. Registra las ventas con múltiples platillos.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+    <div class="fila-info">
+      <div class="texto">
+        <h2>¿Cómo funciona?</h2>
+        <p>
+          La pantalla tiene tres zonas: arriba el selector, abajo a la
+          izquierda el carrito y a la derecha el resumen.
+        </p>
+        <ul>
+          <li>Elige la mesa (solo las Disponibles)</li>
+          <li>Selecciona un platillo del menú</li>
+          <li>Define cantidad y presiona "Agregar"</li>
+          <li>Repite hasta completar el pedido</li>
+          <li>Guarda y el sistema hace el resto</li>
+        </ul>
+      </div>
+      <div class="visual">
+        <div class="visual-caja">
+          <img src="img/3.jpg" alt="Persona tomando pedido">
+        </div>
+      </div>
+    </div>
+
+    <h3 class="mb-3" style="font-size:clamp(18px,2.5vw,22px)">Lo que ocurre al guardar un pedido</h3>
+    <div class="grid grid-3 mb-4">
+      <div class="tarjeta">
+        <div class="ico-caja ico-azul">1</div>
+        <h3 style="font-size:16px">Se crea el pedido</h3>
+        <p style="font-size:13.5px">Se inserta una fila en <code>pedido</code>.</p>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-azul">2</div>
+        <h3 style="font-size:16px">Se guarda el detalle</h3>
+        <p style="font-size:13.5px">Cada producto va a <code>detalle_pedido</code>.</p>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-azul">3</div>
+        <h3 style="font-size:16px">Se actualiza todo</h3>
+        <p style="font-size:13.5px">Stock descontado y mesa ocupada.</p>
+      </div>
+    </div>
+
+    <h3 class="mb-3" style="font-size:clamp(18px,2.5vw,22px)">Transacción completa en SQL</h3>
+    <pre><code>-- 1) Insertar el pedido principal
+INSERT INTO pedido (id_mesa, id_usuario, cliente, estado, total)
+VALUES (%s, %s, %s, 'Pendiente', %s);
+
+-- 2) Por cada producto del carrito
+INSERT INTO detalle_pedido
+(id_pedido, id_platillo, cantidad, precio, subtotal)
+VALUES (%s, %s, %s, %s, %s);
+
+-- 3) Descontar inventario
+UPDATE platillo
+SET existencia = existencia - %s
+WHERE id_platillo = %s;
+
+-- 4) Ocupar la mesa
+UPDATE mesa SET estado='Ocupada' WHERE id_mesa=%s;</code></pre>
+
+    <div class="aviso verde mt-4">
+      <strong>✓ Todo o nada</strong>
+      Las cuatro operaciones se ejecutan dentro de la misma transacción. Si
+      cualquiera falla, se revierte con rollback.
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: MÓDULO REPORTES
+     ============================================================ -->
+<section class="pagina" id="pagina-modulo-reportes">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / <a href="#/modulos">Módulos</a> / Reportes</div>
+      <h1>Módulo de Reportes</h1>
+      <p>Consulta el desempeño del negocio con datos reales.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+    <div class="fila-info">
+      <div class="texto">
+        <h2>¿Qué permite hacer?</h2>
+        <p>
+          Módulo de solo lectura que muestra tres indicadores clave
+          calculados con funciones de agregación de SQL.
+        </p>
+        <ul>
+          <li>Ver cuántos pedidos se han cobrado</li>
+          <li>Ver la suma de ventas acumuladas</li>
+          <li>Conocer el ticket promedio</li>
+          <li>Listar todos los pedidos con estado y fecha</li>
+          <li>Marcar pedidos pendientes como pagados</li>
+        </ul>
+      </div>
+      <div class="visual">
+        <div class="visual-caja">
+          <img src="img/5.jpg" alt="Gráficos de reportes">
+        </div>
+      </div>
+    </div>
+
+    <h3 class="mb-3" style="font-size:clamp(18px,2.5vw,22px)">Indicadores que calcula</h3>
+    <div class="grid grid-3 mb-4">
+      <div class="tarjeta">
+        <div class="ico-caja ico-verde">✓</div>
+        <h3 style="font-size:16px">Pedidos pagados</h3>
+        <p style="font-size:13.5px">Cuenta los pedidos con estado <code>Pagado</code>.</p>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-verde">$</div>
+        <h3 style="font-size:16px">Ventas</h3>
+        <p style="font-size:13.5px">Suma del campo <code>total</code>.</p>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-verde">↗</div>
+        <h3 style="font-size:16px">Promedio</h3>
+        <p style="font-size:13.5px">Ticket medio con <code>AVG()</code>.</p>
+      </div>
+    </div>
+
+    <h3 class="mb-3" style="font-size:clamp(18px,2.5vw,22px)">Consulta SQL de los indicadores</h3>
+    <pre><code>SELECT
+    COUNT(*)              AS cantidad,
+    COALESCE(SUM(total),0)  AS ventas,
+    COALESCE(AVG(total),0)  AS promedio
+FROM pedido
+WHERE estado = 'Pagado';</code></pre>
+
+    <div class="aviso">
+      <strong>💡 Dato importante</strong>
+      Solo los pedidos con estado <strong>Pagado</strong> cuentan como ventas.
+      Los pedidos quedan en <strong>Pendiente</strong> al crearse.
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: MÓDULO USUARIOS
+     ============================================================ -->
+<section class="pagina" id="pagina-modulo-usuarios">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / <a href="#/modulos">Módulos</a> / Usuarios</div>
+      <h1>Módulo de Usuarios</h1>
+      <p>Exclusivo para Administradores. Gestiona quién puede entrar al sistema.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+    <div class="fila-info">
+      <div class="texto">
+        <h2>¿Qué permite hacer?</h2>
+        <p>
+          Este módulo solo es visible si el usuario conectado tiene el rol
+          <strong>Administrador</strong>.
+        </p>
+        <ul>
+          <li>Crear usuarios nuevos</li>
+          <li>Asignar rol Administrador o Empleado</li>
+          <li>Activar o desactivar cuentas</li>
+          <li>Eliminar usuarios definitivamente</li>
+          <li>Ver la fecha de registro</li>
+        </ul>
+      </div>
+      <div class="visual">
+        <div class="visual-caja">
+          <img src="img/6.jpg" alt="Seguridad de usuarios">
+        </div>
+      </div>
+    </div>
+
+    <h3 class="mb-3" style="font-size:clamp(18px,2.5vw,22px)">Roles y permisos</h3>
+    <div class="grid grid-2 mb-4">
+      <div class="tarjeta">
+        <div class="ico-caja ico-coral">🛡️</div>
+        <h3>Administrador</h3>
+        <p>Acceso completo al sistema incluido el módulo de usuarios.</p>
+        <ul>
+          <li>Ve los 6 módulos</li>
+          <li>Puede crear y eliminar usuarios</li>
+          <li>No puede desactivar su propia cuenta</li>
+        </ul>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-azul">👥</div>
+        <h3>Empleado</h3>
+        <p>Acceso operativo sin permiso para gestionar cuentas.</p>
+        <ul>
+          <li>Ve solo 5 módulos</li>
+          <li>Puede registrar pedidos</li>
+          <li>No puede crear usuarios</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="mb-3" style="font-size:clamp(18px,2.5vw,22px)">Cómo se cifra la contraseña</h3>
+    <pre><code>import hashlib
+
+def hash_password(texto):
+    """Convierte una contraseña en SHA-256."""
+    return hashlib.sha256(texto.encode("utf-8")).hexdigest()</code></pre>
+
+    <div class="aviso ambar mt-4">
+      <strong>⚠️ Protección contra auto-bloqueo</strong>
+      El sistema impide que un Administrador desactive o elimine su propia
+      cuenta mientras está conectado.
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: BASE DE DATOS
+     ============================================================ -->
+<section class="pagina" id="pagina-basedatos">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / Documentación / Base de datos</div>
+      <h1>Esquema de la base de datos</h1>
+      <p>Ocho tablas relacionadas que sostienen toda la información.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+
+    <div class="grid grid-3 mb-4">
+      <div class="tarjeta">
+        <div class="ico-caja ico-azul">🗄️</div>
+        <h3>Nombre</h3>
+        <p><code>restaurante_db</code></p>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-verde">🐬</div>
+        <h3>Motor</h3>
+        <p>MySQL 5.7 o superior (InnoDB)</p>
+      </div>
+      <div class="tarjeta">
+        <div class="ico-caja ico-coral">🔗</div>
+        <h3>Relaciones</h3>
+        <p>Claves foráneas entre tablas</p>
+      </div>
+    </div>
+
+    <h3 class="mb-3" style="font-size:clamp(18px,2.5vw,22px)">Tablas del sistema</h3>
+    <div class="tabla-envoltura mb-4">
+      <table class="tabla">
+        <thead>
+          <tr><th>Tabla</th><th>Función</th><th>Campos principales</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>usuarios</code></td><td>Cuentas del sistema</td><td>id_usuario, nombre, usuario, contrasena, rol, estado</td></tr>
+          <tr><td><code>empleado</code></td><td>Personal del restaurante</td><td>id_empleado, nombres, apellidos, telefono, cargo, salario</td></tr>
+          <tr><td><code>mesa</code></td><td>Mesas físicas</td><td>id_mesa, numero, capacidad, ubicacion, estado</td></tr>
+          <tr><td><code>platillo</code></td><td>Menú vendible</td><td>id_platillo, nombre, categoria, precio, existencia</td></tr>
+          <tr><td><code>pedido</code></td><td>Cabecera de venta</td><td>id_pedido, id_mesa, id_usuario, cliente, estado, total</td></tr>
+          <tr><td><code>detalle_pedido</code></td><td>Productos del pedido</td><td>id_detalle, id_pedido, id_platillo, cantidad, subtotal</td></tr>
+          <tr><td><code>categoria</code></td><td>Categorías del menú</td><td>id_categoria, nombre</td></tr>
+          <tr><td><code>pago</code></td><td>Registro de cobros</td><td>id_pago, id_pedido, metodo, monto, fecha</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="mb-3" style="font-size:clamp(18px,2.5vw,22px)">Script de creación (fragmento)</h3>
+    <pre><code>CREATE DATABASE IF NOT EXISTS restaurante_db
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+USE restaurante_db;
+
+CREATE TABLE usuarios (
+  id_usuario      INT AUTO_INCREMENT PRIMARY KEY,
+  nombre          VARCHAR(120) NOT NULL,
+  usuario         VARCHAR(60)  NOT NULL UNIQUE,
+  contrasena      VARCHAR(255) NOT NULL,
+  rol             ENUM('Administrador','Empleado') DEFAULT 'Empleado',
+  estado          ENUM('Activo','Inactivo') DEFAULT 'Activo',
+  fecha_registro  DATETIME DEFAULT CURRENT_TIMESTAMP
+);</code></pre>
+
+    <div class="aviso mt-4">
+      <strong>🔐 Usuario por defecto</strong>
+      Usuario: <code>admin</code> · Contraseña: <code>admin123</code> · Rol:
+      <em>Administrador</em>. Se recomienda cambiarla al primer inicio de
+      sesión.
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: INSTALACIÓN
+     ============================================================ -->
+<section class="pagina" id="pagina-instalacion">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / Documentación / Instalación</div>
+      <h1>Guía de instalación</h1>
+      <p>Sigue estos pasos en orden para tener OrderFast funcionando.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+    <div class="grid" style="grid-template-columns:minmax(0,1fr) 320px;gap:44px;align-items:start">
+
+      <div class="pasos">
+
+        <div class="paso">
+          <div class="paso-num">1</div>
+          <div class="paso-cuerpo">
+            <h3>Instalar Python 3</h3>
+            <p>
+              Descarga Python 3.8 o superior desde python.org. En Windows,
+              marca la casilla <strong>"Add Python to PATH"</strong>.
+            </p>
+            <pre><code>python --version
+# Debe mostrar algo como: Python 3.11.4</code></pre>
+          </div>
+        </div>
+
+        <div class="paso">
+          <div class="paso-num">2</div>
+          <div class="paso-cuerpo">
+            <h3>Instalar MySQL Server</h3>
+            <p>
+              Descarga MySQL Community Server e instálalo. Anota la contraseña
+              del usuario <code>root</code>.
+            </p>
+            <div class="aviso">
+              <strong>Importante</strong>
+              OrderFast se conecta por defecto al puerto <code>3306</code> en
+              <code>localhost</code>.
+            </div>
+          </div>
+        </div>
+
+        <div class="paso">
+          <div class="paso-num">3</div>
+          <div class="paso-cuerpo">
+            <h3>Crear la base de datos</h3>
+            <p>
+              Abre MySQL Workbench o la consola y ejecuta el script
+              <code>usuarios.sql</code>.
+            </p>
+            <pre><code>source ruta/completa/usuarios.sql</code></pre>
+          </div>
+        </div>
+
+        <div class="paso">
+          <div class="paso-num">4</div>
+          <div class="paso-cuerpo">
+            <h3>Instalar el conector de MySQL</h3>
+            <p>
+              Abre la terminal y ejecuta el comando de instalación. Es la
+              única dependencia externa del proyecto.
+            </p>
+            <pre><code>pip install mysql-connector-python</code></pre>
+          </div>
+        </div>
+
+        <div class="paso">
+          <div class="paso-num">5</div>
+          <div class="paso-cuerpo">
+            <h3>Configurar la conexión</h3>
+            <p>
+              Abre el archivo principal y edita las constantes de
+              configuración al inicio.
+            </p>
+            <pre><code>CONFIG_HOST     = "localhost"
+CONFIG_USER     = "root"
+CONFIG_PASSWORD = "TU_CONTRASEÑA_AQUI"
+CONFIG_DATABASE = "restaurante_db"</code></pre>
+          </div>
+        </div>
+
+        <div class="paso">
+          <div class="paso-num">6</div>
+          <div class="paso-cuerpo">
+            <h3>Ejecutar el sistema</h3>
+            <p>
+              Guarda el archivo y ejecútalo con Python. Ingresa con la cuenta
+              administrador por defecto.
+            </p>
+            <pre><code>python orderfast.py</code></pre>
+            <div class="aviso verde">
+              <strong>Credenciales iniciales</strong>
+              Usuario: <code>admin</code><br>
+              Contraseña: <code>admin123</code>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <aside>
+        <div class="tarjeta mb-3">
+          <h3 style="font-size:17px">Resumen rápido</h3>
+          <ul>
+            <li>Python 3.8 o superior</li>
+            <li>MySQL Server activo</li>
+            <li>Script SQL ejecutado</li>
+            <li>Conector instalado</li>
+            <li>Contraseña configurada</li>
+            <li>Programa ejecutado</li>
+          </ul>
+        </div>
+
+        <div class="tarjeta">
+          <h3 style="font-size:17px">Tiempo estimado</h3>
+          <p style="font-size:14px">Entre <strong>15 y 25 minutos</strong> si
+             es la primera vez que instalas Python y MySQL.</p>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: REQUISITOS
+     ============================================================ -->
+<section class="pagina" id="pagina-requisitos">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / Documentación / Requisitos</div>
+      <h1>Requisitos del sistema</h1>
+      <p>Lo que necesita tu computadora para ejecutar OrderFast.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+
+    <div class="grid grid-2 mb-4">
+      <div class="tarjeta">
+        <div class="ico-caja ico-azul">💻</div>
+        <h3>Hardware mínimo</h3>
+        <ul>
+          <li>Procesador de 1.5 GHz o superior</li>
+          <li>2 GB de memoria RAM</li>
+          <li>200 MB de espacio libre en disco</li>
+          <li>Resolución 1100 × 680 o superior</li>
+          <li>Teclado y mouse</li>
+        </ul>
+      </div>
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-verde">⚙️</div>
+        <h3>Software necesario</h3>
+        <ul>
+          <li>Python 3.8 o superior</li>
+          <li>MySQL Server 5.7 o superior</li>
+          <li>mysql-connector-python</li>
+          <li>Windows 10 / 11, Linux o macOS</li>
+          <li>Tkinter (incluido con Python)</li>
+        </ul>
+      </div>
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-coral">📦</div>
+        <h3>Dependencias de Python</h3>
+        <p>Solo se requiere un paquete externo:</p>
+        <ul>
+          <li><code>mysql-connector-python</code> — externo</li>
+          <li><code>tkinter</code> — incluido</li>
+          <li><code>hashlib</code> — incluido</li>
+          <li><code>datetime</code> — incluido</li>
+        </ul>
+      </div>
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-ambar">🌐</div>
+        <h3>Red</h3>
+        <ul>
+          <li>Conexión local al servidor MySQL</li>
+          <li>No requiere internet</li>
+          <li>Puede funcionar en red local</li>
+          <li>Puerto por defecto: 3306</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="aviso ambar">
+      <strong>⚠️ Sobre Windows y Tkinter</strong>
+      Tkinter viene incluido con el instalador oficial de Python para Windows.
+      En Linux puede requerir el paquete <code>python3-tk</code>.
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: MANUAL DE USO
+     ============================================================ -->
+<section class="pagina" id="pagina-manual">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / Documentación / Manual de uso</div>
+      <h1>Manual de uso rápido</h1>
+      <p>Los primeros pasos para poner el sistema en marcha desde cero.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+
+    <div class="grid grid-2 mb-4">
+      <div class="tarjeta">
+        <div class="ico-caja ico-azul">1</div>
+        <h3>Inicia sesión como administrador</h3>
+        <p>Usa la cuenta por defecto <code>admin / admin123</code>. Verás el
+           panel principal con las tarjetas de resumen.</p>
+      </div>
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-azul">2</div>
+        <h3>Crea las mesas del local</h3>
+        <p>Antes de cualquier pedido necesitas registrar las mesas. Ve al
+           módulo Mesas y agrega cada una.</p>
+      </div>
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-azul">3</div>
+        <h3>Carga el menú de platillos</h3>
+        <p>Entra a Platillos y registra los productos con su categoría,
+           precio y existencia inicial.</p>
+      </div>
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-azul">4</div>
+        <h3>Registra a tu personal</h3>
+        <p>El módulo Empleados te permite llevar el control del personal.</p>
+      </div>
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-azul">5</div>
+        <h3>Crea cuentas de usuario</h3>
+        <p>Desde el módulo Usuarios, crea una cuenta para cada persona del
+           equipo.</p>
+      </div>
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-azul">6</div>
+        <h3>Empieza a registrar pedidos</h3>
+        <p>Ve a Pedidos, selecciona mesa y platillos, agrega al carrito y
+           guarda. Después márcalo como pagado en Reportes.</p>
+      </div>
+    </div>
+
+    <h3 class="mb-3 mt-4" style="font-size:clamp(18px,2.5vw,22px)">Atajos y gestos útiles</h3>
+    <div class="tabla-envoltura">
+      <table class="tabla">
+        <thead>
+          <tr><th>Acción</th><th>Cómo hacerlo</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Cargar un registro en el formulario</td><td>Doble clic sobre la fila</td></tr>
+          <tr><td>Guardar un pedido o formulario</td><td>Botón verde "Guardar"</td></tr>
+          <tr><td>Vaciar el formulario</td><td>Botón "Limpiar"</td></tr>
+          <tr><td>Ingresar al sistema</td><td>Presionar Enter en contraseña</td></tr>
+          <tr><td>Cerrar la aplicación</td><td>Presionar la tecla Escape</td></tr>
+          <tr><td>Eliminar un registro</td><td>Seleccionarlo y presionar "Eliminar"</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="aviso verde mt-4">
+      <strong>✓ Recomendación</strong>
+      Cambia la contraseña del usuario <code>admin</code> en cuanto tengas el
+      sistema funcionando.
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: FAQ
+     ============================================================ -->
+<section class="pagina" id="pagina-faq">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / FAQ</div>
+      <h1>Preguntas frecuentes</h1>
+      <p>Las dudas más comunes sobre OrderFast, resueltas.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor" style="max-width:900px">
+
+    <div class="faq-item">
+      <div class="faq-pregunta" onclick="alternarFaq(this)">
+        ¿Necesito conexión a internet para usar OrderFast?
+        <span class="signo">+</span>
+      </div>
+      <div class="faq-respuesta">
+        <div class="faq-respuesta-inner">
+          No. OrderFast funciona completamente en red local. Solo necesita
+          comunicarse con el servidor MySQL, que normalmente está en la misma
+          computadora o en otro equipo de la red del restaurante.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-pregunta" onclick="alternarFaq(this)">
+        ¿Las contraseñas se guardan de forma segura?
+        <span class="signo">+</span>
+      </div>
+      <div class="faq-respuesta">
+        <div class="faq-respuesta-inner">
+          Sí. Las contraseñas nunca se almacenan en texto plano. Se convierten
+          con el algoritmo SHA-256 antes de insertarlas en la base de datos.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-pregunta" onclick="alternarFaq(this)">
+        ¿Puedo cambiar los colores del sistema?
+        <span class="signo">+</span>
+      </div>
+      <div class="faq-respuesta">
+        <div class="faq-respuesta-inner">
+          Sí. Todos los colores están definidos como constantes al inicio del
+          archivo Python. Cambiando esos valores hexadecimales cambia el tema
+          completo de la aplicación.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-pregunta" onclick="alternarFaq(this)">
+        ¿Qué pasa si un empleado intenta entrar al módulo de usuarios?
+        <span class="signo">+</span>
+      </div>
+      <div class="faq-respuesta">
+        <div class="faq-respuesta-inner">
+          El botón de Usuarios solo se crea en la barra lateral si el rol del
+          usuario conectado es Administrador. Si un empleado intentara
+          acceder, el sistema muestra un mensaje de error.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-pregunta" onclick="alternarFaq(this)">
+        ¿Se puede usar el sistema en varias computadoras a la vez?
+        <span class="signo">+</span>
+      </div>
+      <div class="faq-respuesta">
+        <div class="faq-respuesta-inner">
+          Sí, siempre que todas las computadoras apunten al mismo servidor
+          MySQL. Solo hay que cambiar la constante <code>CONFIG_HOST</code>.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-pregunta" onclick="alternarFaq(this)">
+        ¿Qué ocurre si se cae la conexión mientras guardo un pedido?
+        <span class="signo">+</span>
+      </div>
+      <div class="faq-respuesta">
+        <div class="faq-respuesta-inner">
+          El sistema usa transacciones. Si cualquiera de las operaciones falla,
+          se ejecuta un <code>rollback()</code> que deshace todos los cambios.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-pregunta" onclick="alternarFaq(this)">
+        ¿Cómo agrego una categoría nueva al menú?
+        <span class="signo">+</span>
+      </div>
+      <div class="faq-respuesta">
+        <div class="faq-respuesta-inner">
+          Actualmente las categorías están definidas como lista en el módulo de
+          platillos. Para agregar una nueva, busca la tupla de valores del
+          <code>ttk.Combobox</code> de categorías en el código y añade el
+          nombre.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-pregunta" onclick="alternarFaq(this)">
+        ¿El sistema genera facturas o comprobantes?
+        <span class="signo">+</span>
+      </div>
+      <div class="faq-respuesta">
+        <div class="faq-respuesta-inner">
+          No en esta versión. El sistema registra los pedidos y sus totales,
+          y permite marcarlos como pagados, pero no imprime documentos
+          fiscales.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-pregunta" onclick="alternarFaq(this)">
+        ¿Puedo personalizar el nombre del restaurante?
+        <span class="signo">+</span>
+      </div>
+      <div class="faq-respuesta">
+        <div class="faq-respuesta-inner">
+          Sí. El nombre de la aplicación aparece como constante
+          <code>APP_TITLE</code> al inicio del archivo. Cambiando esa línea,
+          el sistema mostrará el nombre de tu restaurante.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: CONTACTO
+     ============================================================ -->
+<section class="pagina" id="pagina-contacto">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / Contacto</div>
+      <h1>Contacto y soporte</h1>
+      <p>¿Tienes dudas, sugerencias o encontraste un problema? Escríbenos.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+    <div class="grid" style="grid-template-columns:minmax(0,1fr) 340px;gap:44px;align-items:start">
+
+      <div class="tarjeta">
+        <h3 class="mb-3">Formulario de contacto</h3>
+        <form onsubmit="enviarContacto(event)">
+          <div class="grid grid-2" style="gap:0 16px">
+            <div style="margin-bottom:16px">
+              <label for="c-nombre">Nombre completo</label>
+              <input id="c-nombre" type="text" required
+                     style="width:100%;padding:11px 13px;border:1px solid var(--borde);border-radius:9px;font-family:inherit;font-size:16px">
+            </div>
+            <div style="margin-bottom:16px">
+              <label for="c-correo">Correo electrónico</label>
+              <input id="c-correo" type="email" required
+                     style="width:100%;padding:11px 13px;border:1px solid var(--borde);border-radius:9px;font-family:inherit;font-size:16px">
+            </div>
+          </div>
+          <div style="margin-bottom:16px">
+            <label for="c-asunto">Asunto</label>
+            <select id="c-asunto"
+                    style="width:100%;padding:11px 13px;border:1px solid var(--borde);border-radius:9px;font-family:inherit;font-size:16px">
+              <option>Consulta general</option>
+              <option>Soporte técnico</option>
+              <option>Reporte de error</option>
+              <option>Sugerencia de mejora</option>
+              <option>Solicitud de cotización</option>
+            </select>
+          </div>
+          <div style="margin-bottom:20px">
+            <label for="c-mensaje">Mensaje</label>
+            <textarea id="c-mensaje" rows="6" required
+                      style="width:100%;padding:11px 13px;border:1px solid var(--borde);border-radius:9px;font-family:inherit;font-size:16px;resize:vertical"></textarea>
+          </div>
+          <button type="submit" class="btn btn-coral">Enviar mensaje</button>
+        </form>
+      </div>
+
+      <aside>
+        <div class="tarjeta mb-3">
+          <div class="ico-caja ico-azul">✉️</div>
+          <h3 style="font-size:17px">Correo</h3>
+          <p style="font-size:14px">soporte@orderfast.com</p>
+        </div>
+        <div class="tarjeta mb-3">
+          <div class="ico-caja ico-verde">📞</div>
+          <h3 style="font-size:17px">Teléfono</h3>
+          <p style="font-size:14px">+503 7282-2445<br>Lunes a viernes, 8:00 a 17:00</p>
+        </div>
+        <div class="tarjeta">
+          <div class="ico-caja ico-coral">💬</div>
+          <h3 style="font-size:17px">Soporte técnico</h3>
+          <p style="font-size:14px">Para reportar errores, incluye una captura
+             de pantalla y el mensaje exacto que muestra el sistema.</p>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA: DESCARGA
+     ============================================================ -->
+<section class="pagina" id="pagina-descarga">
+  <div class="cabecera-pagina">
+    <div class="contenedor">
+      <div class="migas"><a href="#/inicio">Inicio</a> / Descargar</div>
+      <h1>Descarga OrderFast</h1>
+      <p>Obtén el código fuente, el script SQL y la documentación completa.</p>
+    </div>
+  </div>
+
+  <div class="seccion contenedor">
+    <div class="grid grid-2 mb-4">
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-azul">🐍</div>
+        <h3>Código fuente</h3>
+        <p>Archivo Python principal con la aplicación completa lista para
+           ejecutar.</p>
+        <div class="mt-3">
+          <span class="chip chip-verde">Python 3.8+</span>
+          <span class="chip chip-verde">Un solo archivo</span>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-verde">🗄️</div>
+        <h3>Script de base de datos</h3>
+        <p>Archivo <code>usuarios.sql</code> con la creación de la base, las
+           tablas y el usuario administrador por defecto.</p>
+        <div class="mt-3">
+          <span class="chip chip-verde">MySQL 5.7+</span>
+          <span class="chip chip-verde">8 tablas</span>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-coral">📖</div>
+        <h3>Documentación</h3>
+        <p>Esta misma página web con todos los módulos, el esquema de la base
+           de datos y la guía de instalación.</p>
+        <div class="mt-3">
+          <span class="chip chip-coral">HTML</span>
+          <span class="chip chip-coral">Sin dependencias</span>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="ico-caja ico-ambar">📋</div>
+        <h3>Requisitos previos</h3>
+        <p>Antes de ejecutar el sistema, asegúrate de cumplir con todo lo
+           necesario.</p>
+        <div class="mt-3">
+          <a href="#/requisitos" class="btn btn-blanco btn-sm" style="background:#E4EEF5">Ver requisitos</a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="cta-final">
+      <h2>Todo listo para empezar</h2>
+      <p>Sigue la guía de instalación paso a paso y tendrás OrderFast
+         funcionando en menos de media hora.</p>
+      <div class="botones">
+        <a href="#/instalacion" class="btn btn-coral">Ir a la instalación</a>
+        <a href="#/manual" class="btn btn-borde">Ver manual de uso</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <div class="contenedor">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-marca">
+          <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle class="ring-outer" cx="95" cy="105" r="78"/>
+            <path class="ring-arc" d="M 60 50 A 62 62 0 0 1 155 105"/>
+            <path class="receipt" d="M 118 40 L 178 30 L 178 128 L 118 138 Z"/>
+            <circle class="dot-coral" cx="132" cy="58" r="7"/>
+            <circle class="dot-coral" cx="132" cy="78" r="7"/>
+            <circle class="dot-amber" cx="132" cy="98" r="7"/>
+            <line class="line" x1="150" y1="58" x2="170" y2="56"/>
+            <line class="line" x1="150" y1="78" x2="170" y2="76"/>
+            <line class="line" x1="150" y1="98" x2="170" y2="96"/>
+            <line class="dashed" x1="124" y1="112" x2="172" y2="108"/>
+            <rect class="bar-1" x="22" y="72" width="48" height="11" rx="5.5"/>
+            <rect class="bar-2" x="22" y="90" width="42" height="11" rx="5.5"/>
+            <rect class="bar-3" x="22" y="108" width="38" height="11" rx="5.5"/>
+            <path class="cloche-plate" d="M 62 128 L 138 128 L 132 142 L 68 142 Z"/>
+            <ellipse class="cloche-base" cx="100" cy="126" rx="42" ry="7"/>
+            <path class="cloche" d="M 68 120 A 32 32 0 0 1 132 120 Z"/>
+            <circle class="cloche" cx="100" cy="82" r="7"/>
+            <rect class="cloche" x="95" y="86" width="10" height="6" rx="2"/>
+            <path class="cloche-shine" d="M 78 112 Q 82 96 96 92"/>
+            <circle class="check-circle" cx="146" cy="142" r="34"/>
+            <polyline class="check-mark" points="130,142 142,154 164,130"/>
+          </svg>
+          <div>
+            <h3>Order<em>Fast</em></h3>
+            <span>RESTAURANT SYSTEM</span>
+          </div>
+        </div>
+        <p>
+          Sistema de escritorio para la administración integral de
+          restaurantes. Empleados, mesas, platillos, pedidos, reportes y
+          usuarios en una sola aplicación conectada a MySQL.
+        </p>
+      </div>
+
+      <div>
+        <h4>Producto</h4>
+        <ul>
+          <li><a href="#/producto">Vista general</a></li>
+          <li><a href="#/caracteristicas">Características</a></li>
+          <li><a href="#/modulos">Módulos</a></li>
+          <li><a href="#/interfaz">Interfaz</a></li>
+          <li><a href="#/tecnologia">Tecnología</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Documentación</h4>
+        <ul>
+          <li><a href="#/instalacion">Instalación</a></li>
+          <li><a href="#/requisitos">Requisitos</a></li>
+          <li><a href="#/basedatos">Base de datos</a></li>
+          <li><a href="#/manual">Manual de uso</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Soporte</h4>
+        <ul>
+          <li><a href="#/faq">Preguntas frecuentes</a></li>
+          <li><a href="#/contacto">Contacto</a></li>
+          <li><a href="#/descarga">Descargar</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-abajo">
+      <span>© 2024 OrderFast · Sistema de administración para restaurantes</span>
+      <div class="social">
+        <a href="#/contacto" title="Correo" aria-label="Correo">✉</a>
+        <a href="#/contacto" title="Teléfono" aria-label="Teléfono">☎</a>
+        <a href="#/descarga" title="Descargar" aria-label="Descargar">⬇</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<button class="btn-top" id="btnTop" onclick="subirArriba()" aria-label="Volver arriba">↑</button>
+
+
+<script>
+/* ============================================================
+   ENRUTADOR POR HASH
+   ============================================================ */
+const RUTAS = [
+  'inicio','producto','caracteristicas','tecnologia','interfaz',
+  'modulos','modulo-empleados','modulo-mesas','modulo-platillos',
+  'modulo-pedidos','modulo-reportes','modulo-usuarios',
+  'basedatos','instalacion','requisitos','manual',
+  'faq','contacto','descarga'
+];
+
+function mostrarPagina(ruta){
+  if(!RUTAS.includes(ruta)) ruta = 'inicio';
+
+  document.querySelectorAll('.pagina').forEach(p => p.classList.remove('activa'));
+  const destino = document.getElementById('pagina-' + ruta);
+  if(destino) destino.classList.add('activa');
+
+  document.querySelectorAll('.menu > li > a').forEach(a => {
+    a.classList.toggle('activo', a.dataset.ruta === ruta);
+  });
+
+  document.querySelectorAll('.submenu a').forEach(a => {
+    const href = a.getAttribute('href') || '';
+    a.classList.toggle('activo', href === '#/' + ruta);
+  });
+
+  document.title = tituloDe(ruta);
+  cerrarMenu();
+  window.scrollTo({top:0, behavior:'instant'});
+}
+
+function tituloDe(ruta){
+  const titulos = {
+    'inicio':'OrderFast | Sistema de Administración para Restaurantes',
+    'producto':'Producto | OrderFast',
+    'caracteristicas':'Características | OrderFast',
+    'tecnologia':'Tecnología | OrderFast',
+    'interfaz':'Interfaz | OrderFast',
+    'modulos':'Módulos | OrderFast',
+    'modulo-empleados':'Módulo Empleados | OrderFast',
+    'modulo-mesas':'Módulo Mesas | OrderFast',
+    'modulo-platillos':'Módulo Platillos | OrderFast',
+    'modulo-pedidos':'Módulo Pedidos | OrderFast',
+    'modulo-reportes':'Módulo Reportes | OrderFast',
+    'modulo-usuarios':'Módulo Usuarios | OrderFast',
+    'basedatos':'Base de datos | OrderFast',
+    'instalacion':'Instalación | OrderFast',
+    'requisitos':'Requisitos | OrderFast',
+    'manual':'Manual de uso | OrderFast',
+    'faq':'Preguntas frecuentes | OrderFast',
+    'contacto':'Contacto | OrderFast',
+    'descarga':'Descargar | OrderFast'
+  };
+  return titulos[ruta] || titulos['inicio'];
+}
+
+function leerHash(){
+  const hash = location.hash.replace('#/', '').replace('#','') || 'inicio';
+  return hash.split('?')[0];
+}
+
+window.addEventListener('hashchange', () => mostrarPagina(leerHash()));
+
+/* ============================================================
+   MENÚ MÓVIL
+   ============================================================ */
+function alternarMenu(){
+  const menu = document.getElementById('menu');
+  const btn = document.getElementById('btnMenu');
+  const overlay = document.getElementById('overlayMenu');
+  const abierto = menu.classList.contains('abierto');
+
+  if(abierto){
+    cerrarMenu();
+  }else{
+    menu.classList.add('abierto');
+    btn.classList.add('activo');
+    btn.textContent = '✕';
+    overlay.classList.add('activo');
+    document.body.classList.add('menu-abierto');
+  }
+}
+
+function cerrarMenu(){
+  const menu = document.getElementById('menu');
+  const btn = document.getElementById('btnMenu');
+  const overlay = document.getElementById('overlayMenu');
+
+  menu.classList.remove('abierto');
+  btn.classList.remove('activo');
+  btn.textContent = '☰';
+  overlay.classList.remove('activo');
+  document.body.classList.remove('menu-abierto');
+
+  document.querySelectorAll('.menu > li.desplegado')
+    .forEach(x => x.classList.remove('desplegado'));
+}
+
+document.querySelectorAll('.menu > li > a').forEach(a => {
+  a.addEventListener('click', e => {
+    const li = a.parentElement;
+    if(li.querySelector('.submenu') && window.innerWidth <= 820){
+      if(!li.classList.contains('desplegado')){
+        e.preventDefault();
+        document.querySelectorAll('.menu > li.desplegado')
+          .forEach(x => { if(x !== li) x.classList.remove('desplegado'); });
+        li.classList.add('desplegado');
+      }else{
+        li.classList.remove('desplegado');
+      }
+    }
+  });
+});
+
+document.querySelectorAll('.menu a').forEach(a => {
+  a.addEventListener('click', () => {
+    const li = a.parentElement;
+    const tieneSubmenu = li.querySelector('.submenu');
+    if(!tieneSubmenu || window.innerWidth > 820){
+      cerrarMenu();
+    }
+  });
+});
+
+window.addEventListener('resize', () => {
+  if(window.innerWidth > 820){
+    cerrarMenu();
+  }
+});
+
+/* ============================================================
+   FAQ
+   ============================================================ */
+function alternarFaq(el){
+  const item = el.parentElement;
+  const abierto = item.classList.contains('abierto');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('abierto'));
+  if(!abierto) item.classList.add('abierto');
+}
+
+/* ============================================================
+   FORMULARIO DE CONTACTO
+   ============================================================ */
+function enviarContacto(e){
+  e.preventDefault();
+  const nombre = document.getElementById('c-nombre').value.trim();
+  alert('¡Gracias, ' + nombre + '! Tu mensaje fue enviado correctamente.\n\n' +
+        'Nuestro equipo de OrderFast te responderá a la brevedad posible.');
+  e.target.reset();
+}
+
+/* ============================================================
+   BOTÓN VOLVER ARRIBA
+   ============================================================ */
+const btnTop = document.getElementById('btnTop');
+window.addEventListener('scroll', () => {
+  if(window.scrollY > 400){
+    btnTop.classList.add('visible');
+  }else{
+    btnTop.classList.remove('visible');
+  }
+}, {passive:true});
+
+function subirArriba(){
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ============================================================
+   INICIO
+   ============================================================ */
+mostrarPagina(leerHash());
+</script>
+</body>
+</html> 
